@@ -17,6 +17,10 @@
 #include "tools.h"
 //Definiciones
 
+// USO DE BULLET
+#include <bullet/btBulletDynamicsCommon.h>
+//////
+
 #define GL_LOG_FILE "log/gl.log"
 #define VERTEX_SHADER_FILE "shaders/test_vs.glsl"
 #define FRAGMENT_SHADER_FILE "shaders/test_fs.glsl"
@@ -31,6 +35,7 @@ GLFWwindow* g_window = NULL;
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 void processInput(GLFWwindow *window);
+void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void Init();
 
 glm::vec3 cameraPos   = glm::vec3(0.0f, 0.0f, 3.0f);
@@ -55,6 +60,21 @@ int main()
     }
     glfwTerminate();
     return 0;
+
+    // MUNDO FISICO
+    // Configuracion inical del mundo fisico Bullet
+    btDefaultCollisionConfiguration* collisionConfiguration = new btDefaultCollisionConfiguration();
+    btCollisionDispatcher* dispatcher = new btCollisionDispatcher(collisionConfiguration);
+    btBroadphaseInterface* overlappingPairCache = new btDbvtBroadphase();
+    btSequentialImpulseConstraintSolver* solver = new btSequentialImpulseConstraintSolver;
+
+    // Creacion del mundo fisico - Uno por aplicacion
+    btDiscreteDynamicsWorld* dynamicsWorld = new btDiscreteDynamicsWorld(dispatcher, overlappingPairCache, solver, collisionConfiguration);
+
+    // Vector de gravedad
+    dynamicsWorld->setGravity(btVector3(0, -10, 0));
+
+    ////////////
 }
 
 void processInput(GLFWwindow *window)
@@ -122,6 +142,9 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos){
     cameraFront = glm::normalize(front);
 }
 
+void framebuffer_size_callback(GLFWwindow* window, int width, int height){
+    glViewport(0, 0, width, height);
+}
 // glfw: whenever the mouse scroll wheel scrolls, this callback is called
 // ----------------------------------------------------------------------
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset){
