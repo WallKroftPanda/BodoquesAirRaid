@@ -13,7 +13,7 @@ class airplane{
         char* filename;
         float angle;
     public:
-        airplane(char *filename);
+        airplane(char* filename);
         //getters
         GLuint getVao();
         int getNumVertices();

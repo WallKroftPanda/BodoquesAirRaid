@@ -16,7 +16,12 @@
 #include <iostream>
 #include "gl_utils.h"
 #include "tools.h"
+<<<<<<< HEAD
 #include "malla.h"
+=======
+#include "airplane.h"
+//Definiciones
+>>>>>>> 3af16fce964c05dab2eb505e28445fdb9b46bcf8
 
 #define GL_LOG_FILE "log/gl.log"
 #define VERTEX_SHADER_FILE "shaders/test_vs.glsl"
@@ -48,7 +53,11 @@ float pitch =  0.0f;
 float lastX =  g_gl_width / 2.0;
 float lastY =  g_gl_height / 2.0;
 float fov   =  45.0f;
+<<<<<<< HEAD
 
+=======
+airplane* avion;
+>>>>>>> 3af16fce964c05dab2eb505e28445fdb9b46bcf8
 int model_mat_location;
 
 
@@ -193,4 +202,11 @@ void scroll_callback(GLFWwindow* window, double xoffset, double yoffset){
         fov = 1.0f;
     if (fov >= 45.0f)
         fov = 45.0f;
+<<<<<<< HEAD
 }
+=======
+}
+void framebuffer_size_callback(GLFWwindow* window, int width, int height){
+    glViewport(0, 0, width, height);
+}
+>>>>>>> 3af16fce964c05dab2eb505e28445fdb9b46bcf8
