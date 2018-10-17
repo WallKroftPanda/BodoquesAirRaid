@@ -15,6 +15,7 @@
 #include <iostream>
 #include "gl_utils.h"
 #include "tools.h"
+#include "import/airplane.h"
 //Definiciones
 
 // USO DE BULLET
@@ -31,7 +32,7 @@
 int g_gl_width = 800;
 int g_gl_height = 600;
 GLFWwindow* g_window = NULL;
-
+void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 void processInput(GLFWwindow *window);
@@ -49,12 +50,14 @@ float pitch =  0.0f;
 float lastX =  g_gl_width / 2.0;
 float lastY =  g_gl_height / 2.0;
 float fov   =  45.0f;
-
+airplane *avion;
+int model_mat_location;
 int main()
 {
 	Init();
 
     while (!glfwWindowShouldClose(g_window)){
+        processInput(g_window);
         glfwSwapBuffers(g_window);
         glfwPollEvents();
     }
@@ -101,13 +104,15 @@ void Init(){
 	//ESTO SOLO DEBE INCLUIRSE POR AHORA, AL MOMENTO DE CONSTRUIR EL JUEGO, YA QUE NUESTRO JUEGO NO OCUPA MOUSE
 	glfwSetCursorPosCallback(g_window, mouse_callback);
 	glfwSetScrollCallback(g_window, scroll_callback);
-	
+    
 	// Le decimos a GLFW que capture nuestro mouse
 	glfwSetInputMode(g_window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 	
-		/*-------------------------------Creamos Shaders-------------------------------*/
+		
 	GLuint shader_programme = create_programme_from_files (
-		VERTEX_SHADER_FILE, FRAGMENT_SHADER_FILE);
+	VERTEX_SHADER_FILE, FRAGMENT_SHADER_FILE);
+    avion = new airplane((char*)"mallas/Hurricane.obj");
+    model_mat_location=  glGetUniformLocation (shader_programme, "model");   
 }
 
 void mouse_callback(GLFWwindow* window, double xpos, double ypos){
@@ -145,8 +150,7 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos){
 void framebuffer_size_callback(GLFWwindow* window, int width, int height){
     glViewport(0, 0, width, height);
 }
-// glfw: whenever the mouse scroll wheel scrolls, this callback is called
-// ----------------------------------------------------------------------
+
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset){
     if (fov >= 1.0f && fov <= 45.0f)
         fov -= yoffset;
