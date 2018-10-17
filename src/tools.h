@@ -1,6 +1,8 @@
-#include <GLFW/glfw3.h>
+#ifndef TOOLS_H
+#define TOOLS_H
 
-void framebuffer_size_callback(GLFWwindow* window, int width, int height);
-void mouse_callback(GLFWwindow* window, double xpos, double ypos);
-void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
-void processInput(GLFWwindow *window);
+// funcion que carga una malla desde filename
+bool load_mesh (const char* file_name, GLuint* vao, int* point_count);
+// funcion gameplay
+bool gameplay(float cam_speed, double elapsed_seconds, float *cam_pos, float *cam_yaw, float cam_yaw_speed);
+#endif
