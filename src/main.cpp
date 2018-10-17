@@ -16,12 +16,9 @@
 #include <iostream>
 #include "gl_utils.h"
 #include "tools.h"
-<<<<<<< HEAD
-#include "malla.h"
-=======
 #include "airplane.h"
+#include "malla.h"
 //Definiciones
->>>>>>> 3af16fce964c05dab2eb505e28445fdb9b46bcf8
 
 #define GL_LOG_FILE "log/gl.log"
 #define VERTEX_SHADER_FILE "shaders/test_vs.glsl"
@@ -34,7 +31,7 @@ int g_gl_height = 720;
 GLFWwindow* g_window = NULL;
 GLuint shader_programme;
 
-glm::vec3 cameraPos   = glm::vec3(0.0f, 5.0f, 3.0f);
+glm::vec3 cameraPos   = glm::vec3(0.0f, 10.0f, 0.0f);
 glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, -1.0f);
 glm::vec3 cameraUp    = glm::vec3(0.0f, 1.0f, 0.0f);
 
@@ -53,11 +50,7 @@ float pitch =  0.0f;
 float lastX =  g_gl_width / 2.0;
 float lastY =  g_gl_height / 2.0;
 float fov   =  45.0f;
-<<<<<<< HEAD
-
-=======
 airplane* avion;
->>>>>>> 3af16fce964c05dab2eb505e28445fdb9b46bcf8
 int model_mat_location;
 
 
@@ -66,7 +59,7 @@ int main()
     Init();
 
     malla *e1 = new malla((char*)"mallas/sueloRef.obj");
-
+    avion = new airplane((char*)"mallas/Hurricane.obj");
     glm::mat4 projection = glm::perspective(glm::radians(fov), (float)g_gl_width / (float)g_gl_height, 0.1f, 100.0f);
     glm::mat4 view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
 
@@ -91,7 +84,8 @@ int main()
         // ------
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        //cout<<cameraPos.y<<endl;
+        cout<<cameraPos.x<<","<<cameraPos.y<<","<<cameraPos.z<<endl;
+
         // activate shader
 		glUseProgram (shader_programme);
 
@@ -103,6 +97,9 @@ int main()
         e1->setpos(glm::vec3(0.0f,-1.0f,0.0f),model_mat_location);
         glBindVertexArray(e1->getvao());
         glDrawArrays(GL_TRIANGLES,0,e1->getnumvertices());
+        avion->setPosition(glm::vec3(cameraPos.x,cameraPos.y-2,cameraPos.z-4), model_mat_location);
+        glBindVertexArray(avion->getVao());
+        glDrawArrays(GL_TRIANGLES,0,avion->getNumVertices());
         
         glfwSwapBuffers(g_window);
         glfwPollEvents();
@@ -202,11 +199,4 @@ void scroll_callback(GLFWwindow* window, double xoffset, double yoffset){
         fov = 1.0f;
     if (fov >= 45.0f)
         fov = 45.0f;
-<<<<<<< HEAD
 }
-=======
-}
-void framebuffer_size_callback(GLFWwindow* window, int width, int height){
-    glViewport(0, 0, width, height);
-}
->>>>>>> 3af16fce964c05dab2eb505e28445fdb9b46bcf8

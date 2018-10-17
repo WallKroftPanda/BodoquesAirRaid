@@ -20,10 +20,11 @@ class airplane{
         glm::vec3 getPosition();
         glm::vec3 getRotation();
         char* getFilename();
+
         //setters
         void setVao(GLuint vao);
         void setNumVertices(int num);
-        void setPosition(glm::vec3 pos);
+        void setPosition(glm::vec3 pos, int model);
         void setRotation(float ang,glm::vec3 rot);
         void setFileName(char *f);
         void setModelMatrix(glm::mat4 model);

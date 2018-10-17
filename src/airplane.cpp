@@ -33,12 +33,10 @@ glm::vec3 airplane::getRotation(){
 }
 char* airplane::getFilename(){
     return this->filename;
-<<<<<<< HEAD
 }
-=======
-}
-void airplane::setPosition(glm::vec3 pos){
-        this->position = pos;
+void airplane::setPosition(glm::vec3 pos,int model){
+    glm::mat4 T = glm::translate(glm::mat4(1.0f),pos);
+    glUniformMatrix4fv(model, 1,GL_FALSE, glm::value_ptr(T));
 }
 
 void airplane::setRotation(float ang, glm::vec3 rot){
@@ -55,4 +53,3 @@ void airplane::draw(int matloc){
         glBindVertexArray(this->getVao());
         glDrawArrays(GL_TRIANGLES, 0, this->getNumVertices());
 }
->>>>>>> 5f10aea69b0fdfcabcf613caf21118a0cec5ba9a

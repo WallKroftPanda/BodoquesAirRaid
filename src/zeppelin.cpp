@@ -6,7 +6,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
-#include "../tools.h"
+#include "tools.h"
 #include "zeppelin.h"
 #include <assert.h>
 using namespace std;

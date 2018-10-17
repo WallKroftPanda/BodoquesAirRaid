@@ -1,14 +1,8 @@
-<<<<<<< HEAD
-GL_LOG_FILE log. local time Wed Oct 17 16:20:33 2018
+GL_LOG_FILE log. local time Wed Oct 17 16:58:17 2018
 
 starting GLFW 3.1.2 X11 GLX clock_gettime /dev/js XI Xf86vm sharedrenderer: GeForce GTX 950M/PCIe/SSE2
 version: 4.5.0 NVIDIA 384.130
 creating shader from shaders/test_vs.glsl...
-=======
-GL_LOG_FILE log. local time Wed Oct 17 16:19:10 2018
-
-starting GLFW 3.1.2 X11 GLX clock_gettime /dev/js XI Xf86vm sharedcreating shader from shaders/test_vs.glsl...
->>>>>>> 3af16fce964c05dab2eb505e28445fdb9b46bcf8
 shader compiled. index 1
 creating shader from shaders/test_fs.glsl...
 shader compiled. index 2
