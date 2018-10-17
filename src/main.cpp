@@ -15,7 +15,7 @@
 #include <iostream>
 #include "gl_utils.h"
 #include "tools.h"
-#include "import/airplane.h"
+#include "airplane.h"
 //Definiciones
 
 #define GL_LOG_FILE "log/gl.log"
@@ -45,7 +45,7 @@ float pitch =  0.0f;
 float lastX =  g_gl_width / 2.0;
 float lastY =  g_gl_height / 2.0;
 float fov   =  45.0f;
-airplane *avion;
+airplane* avion;
 int model_mat_location;
 int main()
 {
