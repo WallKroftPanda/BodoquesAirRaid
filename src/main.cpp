@@ -97,7 +97,9 @@ int main()
         e1->setpos(glm::vec3(0.0f,-1.0f,0.0f),model_mat_location);
         glBindVertexArray(e1->getvao());
         glDrawArrays(GL_TRIANGLES,0,e1->getnumvertices());
-        avion->setPosition(glm::vec3(cameraPos.x,cameraPos.y-2,cameraPos.z-4), model_mat_location);
+        avion->setPosition(glm::vec3(cameraPos.x,cameraPos.y-1,cameraPos.z-10), model_mat_location);
+        avion->setRotation(1.55f, glm::vec3(0,1,0),model_mat_location);
+        
         glBindVertexArray(avion->getVao());
         glDrawArrays(GL_TRIANGLES,0,avion->getNumVertices());
         
@@ -146,7 +148,7 @@ void processInput(GLFWwindow *window)
 {
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         glfwSetWindowShouldClose(window, true);
-    float cameraSpeed = 2.5 * deltaTime;
+    float cameraSpeed = 25 * deltaTime;
     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
         cameraPos += cameraSpeed * cameraFront;
     if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)

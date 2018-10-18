@@ -35,13 +35,13 @@ char* airplane::getFilename(){
     return this->filename;
 }
 void airplane::setPosition(glm::vec3 pos,int model){
-    glm::mat4 T = glm::translate(glm::mat4(1.0f),pos);
+    T = glm::translate(glm::mat4(1.0f),pos);
     glUniformMatrix4fv(model, 1,GL_FALSE, glm::value_ptr(T));
 }
 
-void airplane::setRotation(float ang, glm::vec3 rot){
-        this->rotation = rot;
-        this->angle = ang;
+void airplane::setRotation(float ang, glm::vec3 rot, int model){
+        T = glm::rotate(glm::mat4(T),ang,rot);
+        glUniformMatrix4fv(model, 1,GL_FALSE, glm::value_ptr(T));
 }
 
 void airplane::setModelMatrix(glm::mat4 model){
