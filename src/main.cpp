@@ -16,12 +16,10 @@
 #include <iostream>
 #include "gl_utils.h"
 #include "tools.h"
-<<<<<<< HEAD
-#include "malla.h"
-=======
 #include "airplane.h"
+#include "zeppelin.h"
+#include "malla.h"
 //Definiciones
->>>>>>> 3af16fce964c05dab2eb505e28445fdb9b46bcf8
 
 #define GL_LOG_FILE "log/gl.log"
 #define VERTEX_SHADER_FILE "shaders/test_vs.glsl"
@@ -53,19 +51,18 @@ float pitch =  0.0f;
 float lastX =  g_gl_width / 2.0;
 float lastY =  g_gl_height / 2.0;
 float fov   =  45.0f;
-<<<<<<< HEAD
-
-=======
 airplane* avion;
->>>>>>> 3af16fce964c05dab2eb505e28445fdb9b46bcf8
+
 int model_mat_location;
+airplane *bodoque;
+zeppelin *e1;
 
 
 int main()
 {
     Init();
 
-    malla *e1 = new malla((char*)"mallas/sueloRef.obj");
+     
 
     glm::mat4 projection = glm::perspective(glm::radians(fov), (float)g_gl_width / (float)g_gl_height, 0.1f, 100.0f);
     glm::mat4 view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
@@ -100,10 +97,14 @@ int main()
         view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
         glUniformMatrix4fv(view_mat_location, 1, GL_FALSE, &view[0][0]);
         
-        e1->setpos(glm::vec3(0.0f,-1.0f,0.0f),model_mat_location);
-        glBindVertexArray(e1->getvao());
-        glDrawArrays(GL_TRIANGLES,0,e1->getnumvertices());
+        bodoque->setPosition(glm::vec3(0.0f,-1.0f,0.0f));
+        glBindVertexArray(bodoque->getVao());
+        bodoque->draw(model_mat_location);
         
+		/*e1->setPosition(glm::vec3(4.0f,-1.0f,0.0f));
+        glBindVertexArray(e1->getVao());
+        e1->draw(model_mat_location);
+*/        
         glfwSwapBuffers(g_window);
         glfwPollEvents();
     }
@@ -136,7 +137,10 @@ void Init(){
 		/*-------------------------------Creamos Shaders-------------------------------*/
 	shader_programme = create_programme_from_files (
 		VERTEX_SHADER_FILE, FRAGMENT_SHADER_FILE);
-    model_mat_location=  glGetUniformLocation (shader_programme, "model");   
+    model_mat_location=  glGetUniformLocation (shader_programme, "model");
+    
+    bodoque = new airplane((char*)"mallas/Hurricane.obj");
+    e1 = new zeppelin((char*)"mallas/dirigible.obj");
 }
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height){
@@ -202,11 +206,5 @@ void scroll_callback(GLFWwindow* window, double xoffset, double yoffset){
         fov = 1.0f;
     if (fov >= 45.0f)
         fov = 45.0f;
-<<<<<<< HEAD
+
 }
-=======
-}
-void framebuffer_size_callback(GLFWwindow* window, int width, int height){
-    glViewport(0, 0, width, height);
-}
->>>>>>> 3af16fce964c05dab2eb505e28445fdb9b46bcf8

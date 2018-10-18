@@ -33,9 +33,6 @@ glm::vec3 airplane::getRotation(){
 }
 char* airplane::getFilename(){
     return this->filename;
-<<<<<<< HEAD
-}
-=======
 }
 void airplane::setPosition(glm::vec3 pos){
         this->position = pos;
@@ -55,4 +52,3 @@ void airplane::draw(int matloc){
         glBindVertexArray(this->getVao());
         glDrawArrays(GL_TRIANGLES, 0, this->getNumVertices());
 }
->>>>>>> 5f10aea69b0fdfcabcf613caf21118a0cec5ba9a

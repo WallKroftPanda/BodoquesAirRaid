@@ -6,7 +6,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
-#include "../tools.h"
+#include "tools.h"
 #include "zeppelin.h"
 #include <assert.h>
 using namespace std;
@@ -33,4 +33,22 @@ glm::vec3 zeppelin::getRotation(){
 }
 char* zeppelin::getFilename(){
     return this->filename;
+}
+void zeppelin::setPosition(glm::vec3 pos){
+        this->position = pos;
+}
+
+void zeppelin::setRotation(float ang, glm::vec3 rot){
+        this->rotation = rot;
+        this->angle = ang;
+}
+
+void zeppelin::setModelMatrix(glm::mat4 model){
+    this->modelMatrix = model;
+}
+
+void zeppelin::draw(int matloc){
+	    glUniformMatrix4fv(matloc, 1, GL_FALSE, &this->modelMatrix[0][0]);
+        glBindVertexArray(this->getVao());
+        glDrawArrays(GL_TRIANGLES, 0, this->getNumVertices());
 }
