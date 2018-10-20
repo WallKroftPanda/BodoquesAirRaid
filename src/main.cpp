@@ -52,7 +52,13 @@ float lastX =  g_gl_width / 2.0;
 float lastY =  g_gl_height / 2.0;
 float fov   =  45.0f;
 airplane* avion;
+<<<<<<< HEAD
+=======
+
+>>>>>>> alexander
 int model_mat_location;
+airplane *bodoque;
+zeppelin *e1;
 
 
 int main()
@@ -62,6 +68,7 @@ int main()
     malla *e1 = new malla((char*)"mallas/sueloRef.obj");
     avion = new airplane((char*)"mallas/Hurricane.obj");
     zeppelin *e2 = new zeppelin((char*)"mallas/dirigible.obj");
+     
     glm::mat4 projection = glm::perspective(glm::radians(fov), (float)g_gl_width / (float)g_gl_height, 0.1f, 100.0f);
     glm::mat4 view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
 
@@ -105,6 +112,10 @@ int main()
         glBindVertexArray(avion->getVao());
         glDrawArrays(GL_TRIANGLES,0,avion->getNumVertices());
         
+		/*e1->setPosition(glm::vec3(4.0f,-1.0f,0.0f));
+        glBindVertexArray(e1->getVao());
+        e1->draw(model_mat_location);
+*/        
         glfwSwapBuffers(g_window);
         glfwPollEvents();
     }
@@ -137,7 +148,10 @@ void Init(){
 		/*-------------------------------Creamos Shaders-------------------------------*/
 	shader_programme = create_programme_from_files (
 		VERTEX_SHADER_FILE, FRAGMENT_SHADER_FILE);
-    model_mat_location=  glGetUniformLocation (shader_programme, "model");   
+    model_mat_location=  glGetUniformLocation (shader_programme, "model");
+    
+    bodoque = new airplane((char*)"mallas/Hurricane.obj");
+    e1 = new zeppelin((char*)"mallas/dirigible.obj");
 }
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height){
@@ -203,4 +217,5 @@ void scroll_callback(GLFWwindow* window, double xoffset, double yoffset){
         fov = 1.0f;
     if (fov >= 45.0f)
         fov = 45.0f;
+       
 }
