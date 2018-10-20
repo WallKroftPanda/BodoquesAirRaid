@@ -33,5 +33,13 @@ class airplane{
         void setModelMatrix(glm::mat4 model);
 
         void draw(int matloc);
+        
+        //Funcionalidades del avión deben ser implementadas más adelante junto con bullet... 
+        void explotar();
+        void girar_IZQ(); //movimiento de palas para girar a la izquierda 
+        void girar_DER();//movimiento de palas para girar a la derecha
+        void inc_VEL(); //Incrementar velocidad
+        void dis_VEL(); //Reducir velocidad
+        
 };
 #endif

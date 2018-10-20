@@ -34,3 +34,4 @@ glm::vec3 zeppelin::getRotation(){
 char* zeppelin::getFilename(){
     return this->filename;
 }
+

@@ -9,7 +9,6 @@
 #define _USE_MATH_DEFINES
 #include <math.h>
 #include <string>
-#include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
@@ -17,7 +16,9 @@
 #include "gl_utils.h"
 #include "tools.h"
 #include "airplane.h"
+#include "zeppelin.h"
 #include "malla.h"
+#include "camera.h"
 //Definiciones
 
 #define GL_LOG_FILE "log/gl.log"
@@ -60,6 +61,7 @@ int main()
 
     malla *e1 = new malla((char*)"mallas/sueloRef.obj");
     avion = new airplane((char*)"mallas/Hurricane.obj");
+    zeppelin *e2 = new zeppelin((char*)"mallas/dirigible.obj");
     glm::mat4 projection = glm::perspective(glm::radians(fov), (float)g_gl_width / (float)g_gl_height, 0.1f, 100.0f);
     glm::mat4 view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
 

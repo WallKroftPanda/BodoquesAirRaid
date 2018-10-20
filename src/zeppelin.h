@@ -14,12 +14,14 @@ class zeppelin{
         float angle;
     public:
         zeppelin(char *filename);
+        
         //getters
         GLuint getVao();
         int getNumVertices();
         glm::vec3 getPosition();
         glm::vec3 getRotation();
         char* getFilename();
+        
         //setters
         void setVao(GLuint vao);
         void setNumVertices(int num);
@@ -29,5 +31,7 @@ class zeppelin{
         void setModelMatrix(glm::mat4 model);
 
         void draw(int matloc);
+        void explotar();
+        
 };
 #endif
