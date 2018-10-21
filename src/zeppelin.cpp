@@ -34,16 +34,15 @@ glm::vec3 zeppelin::getRotation(){
 char* zeppelin::getFilename(){
     return this->filename;
 }
-<<<<<<< HEAD
 
-=======
-void zeppelin::setPosition(glm::vec3 pos){
-        this->position = pos;
+void zeppelin::setPosition(glm::vec3 pos,int model){
+    T = glm::translate(glm::mat4(1.0f),pos);
+    glUniformMatrix4fv(model, 1,GL_FALSE, glm::value_ptr(T));
 }
 
-void zeppelin::setRotation(float ang, glm::vec3 rot){
-        this->rotation = rot;
-        this->angle = ang;
+void zeppelin::setRotation(float ang, glm::vec3 rot, int model){
+        T = glm::rotate(glm::mat4(T),ang,rot);
+        glUniformMatrix4fv(model, 1,GL_FALSE, glm::value_ptr(T));
 }
 
 void zeppelin::setModelMatrix(glm::mat4 model){
@@ -55,4 +54,3 @@ void zeppelin::draw(int matloc){
         glBindVertexArray(this->getVao());
         glDrawArrays(GL_TRIANGLES, 0, this->getNumVertices());
 }
->>>>>>> alexander

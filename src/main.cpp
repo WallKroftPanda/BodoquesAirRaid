@@ -31,10 +31,11 @@ int g_gl_width = 1280;
 int g_gl_height = 720;
 GLFWwindow* g_window = NULL;
 GLuint shader_programme;
-
-glm::vec3 cameraPos   = glm::vec3(0.0f, 10.0f, 0.0f);
+//Posiciones de camara
+camera *camara;
+/*glm::vec3 cameraPos   = glm::vec3(0.0f, 10.0f, 0.0f);
 glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, -1.0f);
-glm::vec3 cameraUp    = glm::vec3(0.0f, 1.0f, 0.0f);
+glm::vec3 cameraUp    = glm::vec3(0.0f, 1.0f, 0.0f);*/
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
@@ -52,34 +53,28 @@ float lastX =  g_gl_width / 2.0;
 float lastY =  g_gl_height / 2.0;
 float fov   =  45.0f;
 airplane* avion;
-<<<<<<< HEAD
-=======
 
->>>>>>> alexander
 int model_mat_location;
 airplane *bodoque;
 zeppelin *e1;
-
+malla *suelo;
 
 int main()
 {
     Init();
+    
+    camara= new camera(glm::vec3(0.0f, 10.0f, 0.0f), glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+    
+    camara->setProjection(fov, g_gl_width, g_gl_height);
+    
+    camara->setView();
 
-    malla *e1 = new malla((char*)"mallas/sueloRef.obj");
-    avion = new airplane((char*)"mallas/Hurricane.obj");
-    zeppelin *e2 = new zeppelin((char*)"mallas/dirigible.obj");
-     
-    glm::mat4 projection = glm::perspective(glm::radians(fov), (float)g_gl_width / (float)g_gl_height, 0.1f, 100.0f);
-    glm::mat4 view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
-
-	int view_mat_location = glGetUniformLocation (shader_programme, "view");
-	glUseProgram (shader_programme);
-	glUniformMatrix4fv(view_mat_location, 1, GL_FALSE, &view[0][0]);
-	int proj_mat_location = glGetUniformLocation (shader_programme, "proj");
-	glUseProgram (shader_programme);
-	glUniformMatrix4fv (proj_mat_location, 1, GL_FALSE, &projection[0][0]);
+	camara->setViewMatLocation(shader_programme);
+	
+	camara->setProjMatLocation(shader_programme);
     int model_mat_location = glGetUniformLocation(shader_programme, "model");
-
+	glm::vec3 cam;
+	
     while (!glfwWindowShouldClose(g_window)){
 
         //time
@@ -93,24 +88,28 @@ int main()
         // ------
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        cout<<cameraPos.x<<","<<cameraPos.y<<","<<cameraPos.z<<endl;
+        cam = camara->getCameraPos();
+        cout<<cam.x<<","<<cam.y<<","<<cam.z<<endl;
 
         // activate shader
 		glUseProgram (shader_programme);
 
-        projection = glm::perspective(glm::radians(fov), (float)g_gl_width / (float)g_gl_height, 0.1f, 100.0f);
-        glUniformMatrix4fv (proj_mat_location, 1, GL_FALSE, &projection[0][0]);
-        view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
-        glUniformMatrix4fv(view_mat_location, 1, GL_FALSE, &view[0][0]);
-        
-        e1->setpos(glm::vec3(0.0f,-1.0f,0.0f),model_mat_location);
-        glBindVertexArray(e1->getvao());
-        glDrawArrays(GL_TRIANGLES,0,e1->getnumvertices());
-        avion->setPosition(glm::vec3(cameraPos.x,cameraPos.y-1,cameraPos.z-10), model_mat_location);
-        avion->setRotation(1.55f, glm::vec3(0,1,0),model_mat_location);
-        
-        glBindVertexArray(avion->getVao());
-        glDrawArrays(GL_TRIANGLES,0,avion->getNumVertices());
+	    camara->setProjection(fov, g_gl_width, g_gl_height);
+
+        camara->setView();
+        //Dibujar suelo
+        suelo->setpos(glm::vec3(0.0f,-1.0f,0.0f),model_mat_location);
+        glBindVertexArray(suelo->getvao());
+        glDrawArrays(GL_TRIANGLES,0,suelo->getnumvertices());
+        //Dibujar avión
+        bodoque->setPosition(glm::vec3(cam.x,cam.y-1,cam.z-10), model_mat_location);
+        bodoque->setRotation(1.55f, glm::vec3(0,1,0),model_mat_location);
+        glBindVertexArray(bodoque->getVao());
+        glDrawArrays(GL_TRIANGLES,0,bodoque->getNumVertices());
+        //Dibujar zeppelin
+        e1->setPosition(glm::vec3(0.0f,-6.0f,3.0f), model_mat_location);
+        glBindVertexArray(e1->getVao());
+        glDrawArrays(GL_TRIANGLES,0,e1->getNumVertices());
         
 		/*e1->setPosition(glm::vec3(4.0f,-1.0f,0.0f));
         glBindVertexArray(e1->getVao());
@@ -152,6 +151,7 @@ void Init(){
     
     bodoque = new airplane((char*)"mallas/Hurricane.obj");
     e1 = new zeppelin((char*)"mallas/dirigible.obj");
+   	suelo = new malla((char*)"mallas/sueloRef.obj");
 }
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height){
@@ -166,13 +166,13 @@ void processInput(GLFWwindow *window)
         glfwSetWindowShouldClose(window, true);
     float cameraSpeed = 25 * deltaTime;
     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-        cameraPos += cameraSpeed * cameraFront;
+        camara->setCameraPos(8,cameraSpeed);
     if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-        cameraPos -= cameraSpeed * cameraFront;
+		camara->setCameraPos(2,cameraSpeed);
     if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-        cameraPos -= glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
+        camara->setCameraPos(4,cameraSpeed);
     if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-        cameraPos += glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
+        camara->setCameraPos(6,cameraSpeed);
 }
 
 void mouse_callback(GLFWwindow* window, double xpos, double ypos){
@@ -204,7 +204,7 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos){
     front.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
     front.y = sin(glm::radians(pitch));
     front.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
-    cameraFront = glm::normalize(front);
+    camara->setCameraFront(front);
     std::cout<<front.x<<std::endl;
     std::cout<<front.y<<std::endl;
     std::cout<<front.z<<std::endl;

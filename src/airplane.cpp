@@ -34,14 +34,9 @@ glm::vec3 airplane::getRotation(){
 char* airplane::getFilename(){
     return this->filename;
 }
-<<<<<<< HEAD
 void airplane::setPosition(glm::vec3 pos,int model){
     T = glm::translate(glm::mat4(1.0f),pos);
     glUniformMatrix4fv(model, 1,GL_FALSE, glm::value_ptr(T));
-=======
-void airplane::setPosition(glm::vec3 pos){
-        this->position = pos;
->>>>>>> alexander
 }
 
 void airplane::setRotation(float ang, glm::vec3 rot, int model){

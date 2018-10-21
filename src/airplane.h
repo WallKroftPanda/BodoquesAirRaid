@@ -27,7 +27,6 @@ class airplane{
         void setVao(GLuint vao);
         void setNumVertices(int num);
         void setPosition(glm::vec3 pos, int model);
-        void setRotation(float ang,glm::vec3 rot);
         void setRotation(float ang,glm::vec3 rot,int model);
         void setFileName(char *f);
         void setModelMatrix(glm::mat4 model);
