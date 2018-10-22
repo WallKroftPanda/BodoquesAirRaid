@@ -232,4 +232,5 @@ void Logica(){
     //  MOVERSE
     //  COLISIONAR
     //  OBSTACULOS
+    //  MAPA
 }
