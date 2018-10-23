@@ -1,6 +1,5 @@
 #ifndef MALLA_H
 #define MALLA_H
-
 using namespace std;
 
 class malla{
