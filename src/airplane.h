@@ -7,9 +7,11 @@ class airplane{
     private:
         GLuint vao,vbo;
         int numVertices;
+        float life;
+        int bullets;
         glm::vec3 position;
         glm::vec3 rotation;
-        glm::vec3 scale ;
+        glm::vec3 scale;
         glm::mat4 T;
         glm::mat4 modelMatrix;
         char* filename;
@@ -19,6 +21,8 @@ class airplane{
         //getters
         GLuint getVao();
         int getNumVertices();
+        int getBullets();
+        float getLife();
         glm::vec3 getPosition();
         glm::vec3 getRotation();
         char* getFilename();
@@ -26,6 +30,7 @@ class airplane{
         //setters
         void setVao(GLuint vao);
         void setNumVertices(int num);
+        void setBullets(int bullet);
         void setPosition(glm::vec3 pos, int model);
         void setRotation(float ang,glm::vec3 rot,int model);
         void setFileName(char *f);

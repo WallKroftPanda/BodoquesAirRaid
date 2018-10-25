@@ -16,6 +16,7 @@ airplane::airplane(char* filename){
     this->position = glm::vec3(0,0,0);
     this->rotation = glm::vec3(0,1,0);
     this->angle = 0.0f;
+    this->life = 100.0f;
     assert(load_mesh(filename,&vao,&numVertices));
 }
 
@@ -24,6 +25,12 @@ GLuint airplane::getVao(){
 }
 int airplane::getNumVertices(){
     return this->numVertices;
+}
+float airplane::getLife(){
+    return this->life;
+}
+int airplane::getBullets(){
+    return this->bullets;
 }
 glm::vec3 airplane::getPosition(){
     return this->position;
@@ -46,6 +53,9 @@ void airplane::setRotation(float ang, glm::vec3 rot, int model){
 
 void airplane::setModelMatrix(glm::mat4 model){
     this->modelMatrix = model;
+}
+void airplane::setBullets(int bullet){
+    this->bullets = bullet;
 }
 
 void airplane::draw(int matloc){

@@ -16,6 +16,7 @@ zeppelin::zeppelin(char* filename){
 	this->position = glm::vec3(0,0,0);
     this->rotation = glm::vec3(0,1,0);
     this->angle = 0.0f;
+    this->life = 300.0f;
     assert(load_mesh(filename,&vao,&numVertices));
 }
 
@@ -24,6 +25,9 @@ GLuint zeppelin::getVao(){
 }
 int zeppelin::getNumVertices(){
     return this->numVertices;
+}
+float zeppelin::getLife(){
+    return this->life;
 }
 glm::vec3 zeppelin::getPosition(){
     return this->position;

@@ -59,6 +59,7 @@ airplane *bodoque;
 zeppelin *e1;
 malla *suelo;
 malla *ElMono;
+malla *pickUp;
 
 int main()
 {
@@ -112,6 +113,11 @@ int main()
         glBindVertexArray(e1->getVao());
         glDrawArrays(GL_TRIANGLES,0,e1->getNumVertices());
 
+        // DIBUJAR CAJA DE MUNICION
+        pickUp->setpos(glm::vec3(-10.0f,15.0f,-25.0f),model_mat_location);
+        glBindVertexArray(pickUp->getvao());
+        glDrawArrays(GL_TRIANGLES,0,pickUp->getnumvertices());
+
         //Dibujar ElMono
         ElMono->setpos(glm::vec3(-30.0f,2.0f,5.0f), model_mat_location);
         glBindVertexArray(ElMono->getvao());
@@ -159,6 +165,7 @@ void Init(){
     e1 = new zeppelin((char*)"mallas/dirigible.obj");
    	suelo = new malla((char*)"mallas/sueloRef.obj");
     ElMono = new malla((char*)"mallas/suzanne.obj");
+    pickUp = new malla((char*) "mallas/caja.obj");
 }
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height){

@@ -6,9 +6,10 @@ class zeppelin{
     private:
         GLuint vao,vbo;
         int numVertices;
+        float life;
         glm::vec3 position;
         glm::vec3 rotation;
-        glm::vec3 scale ;
+        glm::vec3 scale;
         glm::mat4 T;
         glm::mat4 modelMatrix;
         char* filename;
@@ -19,6 +20,7 @@ class zeppelin{
         //getters
         GLuint getVao();
         int getNumVertices();
+        float getLife();
         glm::vec3 getPosition();
         glm::vec3 getRotation();
         char* getFilename();
