@@ -51,7 +51,7 @@ float lastFrame;
 float pitch =  0.0f;
 float lastX =  g_gl_width / 2.0;
 float lastY =  g_gl_height / 2.0;
-float fov   =  45.0f;
+float fov   =  16.0f;
 airplane* avion;
 
 int model_mat_location;
@@ -104,8 +104,8 @@ int main()
         glBindVertexArray(suelo->getvao());
         glDrawArrays(GL_TRIANGLES,0,suelo->getnumvertices());
         //Dibujar avión
-        bodoque->setPosition(glm::vec3(cam.x,cam.y-1,cam.z-10), model_mat_location);
-        bodoque->setRotation(1.55f, glm::vec3(0,1,0),model_mat_location);
+        bodoque->setPosition(glm::vec3(cam.x,cam.y-1,cam.z-15), model_mat_location);
+        bodoque->setRotation(1.57f, glm::vec3(0,1,0),model_mat_location);
         glBindVertexArray(bodoque->getVao());
         glDrawArrays(GL_TRIANGLES,0,bodoque->getNumVertices());
         //Dibujar zeppelin
