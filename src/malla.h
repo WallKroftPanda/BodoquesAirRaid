@@ -11,7 +11,6 @@ class malla{
 
     public:
         malla(char *filename);
-
         // gets
         GLuint getvao();
         int getnumvertices();

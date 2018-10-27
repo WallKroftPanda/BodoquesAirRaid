@@ -3,10 +3,19 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include "camera.h"
-camera::camera(glm::vec3 cameraPos,glm::vec3 cameraFront,glm::vec3 cameraUp){
+//#include <iostream>
+camera::camera(glm::vec3 cameraPos,glm::vec3 cameraFront,glm::vec3 cameraUp, int W, int H){
 	this->cPos = cameraPos;
 	this->cFront = cameraFront;
 	this->cUp = cameraUp;
+	this->gl_W = W;
+	this->gl_H = H;
+	this->lastX =  W / 2.0;
+	this->lastY =  H / 2.0;
+	this->firstMouse = true;
+	this->sensitivity = 0.1f;
+	this->yaw   = -90.0f;
+	this->pitch =  0.0f;
 }
 //GETTERS
 
@@ -34,7 +43,7 @@ void camera::setView(){
 	glUniformMatrix4fv(view_mat_location, 1, GL_FALSE, &view[0][0]);
 }
 
-void camera::setProjection(float fov, int gl_W, int gl_H){
+void camera::setProjection(float fov){
 	this->projection = glm::perspective(glm::radians(fov), (float)gl_W / (float)gl_H, 0.1f, 100.0f);
 	glUniformMatrix4fv (proj_mat_location, 1, GL_FALSE, &projection[0][0]);
 }
@@ -70,6 +79,40 @@ void camera::setCameraPos(int dir,float cameraSpeed){
 
 void camera::setCameraFront(glm::vec3 front){
 	this->cFront = glm::normalize(front);
+}
+
+void camera::actualizar(double xpos, double ypos){
+	if (this->firstMouse){
+        this->lastX = xpos;
+        this->lastY = ypos;
+        this->firstMouse = false;
+    }
+
+    float xoffset = xpos - this->lastX;
+    float yoffset = this->lastY - ypos; // reversed since y-coordinates go from bottom to top
+    this->lastX = xpos;
+    this->lastY = ypos;
+    
+    xoffset *= this->sensitivity;
+    yoffset *= this->sensitivity;
+
+    this->yaw += xoffset;
+    this->pitch += yoffset;
+
+    // make sure that when pitch is out of bounds, screen doesn't get flipped
+    if (this->pitch > 89.0f)
+        this->pitch = 89.0f;
+    if (this->pitch < -89.0f)
+        this->pitch = -89.0f;
+    //actualizar la camara con los nuevos datos:    
+    this->cFront = glm::vec3(cos(glm::radians(yaw)) * cos(glm::radians(pitch)),
+    						sin(glm::radians(pitch)),
+    						sin(glm::radians(yaw)) * cos(glm::radians(pitch)));
+    /*Si se quiere habilitar em imprimir fron, se debe exportar <iostream>
+    std::cout<<front.x<<std::endl;
+    std::cout<<front.y<<std::endl;
+    std::cout<<front.z<<std::endl;
+    */
 }
 
 

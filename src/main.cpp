@@ -43,14 +43,9 @@ void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 void processInput(GLFWwindow *window);
 void Init();
 
-bool firstMouse = true;
-float yaw   = -90.0f;
 float deltaTime;
 float timef;
 float lastFrame;
-float pitch =  0.0f;
-float lastX =  g_gl_width / 2.0;
-float lastY =  g_gl_height / 2.0;
 float fov   =  16.0f;
 airplane* avion;
 
@@ -63,11 +58,12 @@ malla *pickUp;
 
 int main()
 {
+
     Init();
     
-    camara= new camera(glm::vec3(0.0f, 10.0f, 0.0f), glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+    camara= new camera(glm::vec3(0.0f, 10.0f, 0.0f), glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f, 1.0f, 0.0f),g_gl_width,g_gl_height);
     
-    camara->setProjection(fov, g_gl_width, g_gl_height);
+    camara->setProjection(fov);
     
     camara->setView();
 
@@ -96,7 +92,7 @@ int main()
         // activate shader
 		glUseProgram (shader_programme);
 
-	    camara->setProjection(fov, g_gl_width, g_gl_height);
+	    camara->setProjection(fov);
 
         camara->setView();
         //Dibujar suelo
@@ -188,40 +184,9 @@ void processInput(GLFWwindow *window)
     if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
         camara->setCameraPos(6,cameraSpeed);
 }
-
+//Camara casi completamente migrada, esta función se me hace un problema, ya que se llama a esta función en INIT(), al quererla reemplazar dire3ctamente con la funcion camara->actualizar(), me daba error, por lo que decidí dejarla tal cual está, y llamar a "actualizar dentro de esta.
 void mouse_callback(GLFWwindow* window, double xpos, double ypos){
-    if (firstMouse){
-        lastX = xpos;
-        lastY = ypos;
-        firstMouse = false;
-    }
-
-    float xoffset = xpos - lastX;
-    float yoffset = lastY - ypos; // reversed since y-coordinates go from bottom to top
-    lastX = xpos;
-    lastY = ypos;
-
-    float sensitivity = 0.1f; // change this value to your liking
-    xoffset *= sensitivity;
-    yoffset *= sensitivity;
-
-    yaw += xoffset;
-    pitch += yoffset;
-
-    // make sure that when pitch is out of bounds, screen doesn't get flipped
-    if (pitch > 89.0f)
-        pitch = 89.0f;
-    if (pitch < -89.0f)
-        pitch = -89.0f;
-
-    glm::vec3 front;
-    front.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
-    front.y = sin(glm::radians(pitch));
-    front.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
-    camara->setCameraFront(front);
-    std::cout<<front.x<<std::endl;
-    std::cout<<front.y<<std::endl;
-    std::cout<<front.z<<std::endl;
+		camara->actualizar(xpos, ypos);
 }
 
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset){
