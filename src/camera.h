@@ -8,6 +8,7 @@
 
 class camera{
 	private:
+		//matrices de transformación y pocisión para la camara
 		glm::vec3 cPos;
 		glm::vec3 cFront;
 		glm::vec3 cUp;
@@ -15,10 +16,19 @@ class camera{
 		glm::mat4 view;
 		int view_mat_location;
 		int proj_mat_location;
+		int gl_W;
+		int gl_H;
+		//Variables necesarias para actualizar la camara, y vista de objetos
+		bool firstMouse;
+		float sensitivity;
+		float yaw;
+		float pitch;
+		float lastX;
+		float lastY;
 	public:
 		
 		//Constructor
-		camera(glm::vec3 cameraPos, glm::vec3 cameraFront, glm::vec3 cameraUp);
+		camera(glm::vec3 cameraPos, glm::vec3 cameraFront, glm::vec3 cameraUp,int W,int H);
 		//getters
 		glm::vec3 getCameraPos();
 		glm::vec3 getCameraFront();
@@ -32,9 +42,10 @@ class camera{
 		void setCameraUp();
 		void setView();
 		void setCameraPos();
-		void setProjection(float fov, int gl_W, int gl_H);
+		void setProjection(float fov);
 		void setViewMatLocation(GLuint shader_programme);
 		void setProjMatLocation(GLuint shader_programme);
+		void actualizar(double xpos, double ypos);
 };
 
 #endif

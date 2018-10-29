@@ -33,8 +33,7 @@ char* malla::getfilename(){
     return this->filename;
 }
 
-void malla::setpos(glm::vec3 p, int model)
-{
+void malla::setpos(glm::vec3 p, int model){
     glm::mat4 T = glm::translate(glm::mat4(1.0f),p);
     glUniformMatrix4fv(model, 1,GL_FALSE, glm::value_ptr(T));
 }
