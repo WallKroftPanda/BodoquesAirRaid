@@ -1,29 +1,4 @@
-#include <assimp/cimport.h> // C importer
-#include <assimp/scene.h> // collects data
-#include <assimp/postprocess.h> // various extra operations
-#include <GL/glew.h> // include GLEW and new version of GL on Windows
-#include <GLFW/glfw3.h> // GLFW helper library
-#include <stdio.h>
-#include <stdlib.h>
-#include <assert.h>
-#define _USE_MATH_DEFINES
-#include <math.h>
-#include <string>
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtc/type_ptr.hpp>
-#include <iostream>
-#include "gl_utils.h"
-#include "tools.h"
-#include "airplane.h"
-#include "zeppelin.h"
-#include "malla.h"
-#include "camera.h"
-//Definiciones
-
-#define GL_LOG_FILE "log/gl.log"
-#define VERTEX_SHADER_FILE "shaders/test_vs.glsl"
-#define FRAGMENT_SHADER_FILE "shaders/test_fs.glsl"
+#include "addons.h"
 
 //VARIABLES GLOBALES
 
@@ -57,7 +32,7 @@ airplane* avion;
 int model_mat_location;
 airplane *bodoque;
 zeppelin *e1;
-malla *suelo;
+suelo *elsuelo;
 malla *ElMono;
 malla *pickUp;
 
@@ -100,9 +75,9 @@ int main()
 
         camara->setView();
         //Dibujar suelo
-        suelo->setpos(glm::vec3(0.0f,-1.0f,0.0f),model_mat_location);
-        glBindVertexArray(suelo->getvao());
-        glDrawArrays(GL_TRIANGLES,0,suelo->getnumvertices());
+        elsuelo->setPosition(glm::vec3(0.0f,-1.0f,0.0f),model_mat_location);
+        glBindVertexArray(elsuelo->getVao());
+        glDrawArrays(GL_TRIANGLES,0,elsuelo->getNumVertices());
         //Dibujar avión
         bodoque->setPosition(glm::vec3(cam.x,cam.y-1,cam.z-15), model_mat_location);
         bodoque->setRotation(1.57f, glm::vec3(0,1,0),model_mat_location);
@@ -163,7 +138,7 @@ void Init(){
     
     bodoque = new airplane((char*)"mallas/Hurricane.obj");
     e1 = new zeppelin((char*)"mallas/dirigible.obj");
-   	suelo = new malla((char*)"mallas/sueloRef.obj");
+   	elsuelo = new suelo((char*)"mallas/sueloRef.obj");
     ElMono = new malla((char*)"mallas/suzanne.obj");
     pickUp = new malla((char*) "mallas/caja.obj");
 }
