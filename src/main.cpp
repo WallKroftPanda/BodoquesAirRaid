@@ -175,9 +175,19 @@ void scroll_callback(GLFWwindow* window, double xoffset, double yoffset){
 }
 
 void Logica(){
+    /*
     //  DISPARAR
+    El avion tendra una cantidad limitada de municiones, estas se pueden aumentar
+    a medida que coleccione cajas en el aire (drop). Si se le acaban las balas el
+    jugador pierde, en caso de haber eliminado todos los objetivos el jugador gana.
     //  MOVERSE
+    Movimiento en desarrollo, idealmente se rota con A (izquierda) y D (derecha),
+    S para subir el morro y W para bajarlo, se intentara implementar comandos para
+    acelerar o desacelerar el avion (el avion no poseera velocidad constante).
     //  COLISIONAR
-    //  OBSTACULOS
+    Dirigibles y el suelo seran objetos en los cuales si el jugador choca, pierde
     //  MAPA
+    El mapa se modificara acorde al desarrollo del juego, de manera preliminar
+    se puede decir que al salir del mapa el jugador pierde automaticamente
+    */
 }
