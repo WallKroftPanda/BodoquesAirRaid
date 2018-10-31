@@ -1,5 +1,7 @@
 #include "addons.h"
-
+#include "imgui.h"
+#include "imgui_impl_glfw.h"
+#include "imgui_impl_opengl3.h"
 //VARIABLES GLOBALES
 
 int g_gl_width = 1280;
@@ -17,13 +19,15 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 void processInput(GLFWwindow *window);
 void Init();
+void activarMouse();
+void GUILayout();
 
 float deltaTime;
 float timef;
 float lastFrame;
 float fov   =  16.0f;
 airplane* avion;
-
+bool inGame=false;
 int model_mat_location;
 airplane *bodoque;
 zeppelin *e1;
@@ -47,6 +51,20 @@ int main()
 	camara->setProjMatLocation(shader_programme);
     int model_mat_location = glGetUniformLocation(shader_programme, "model");
 	glm::vec3 cam;
+
+    /* crea un contexto ,usado por imgui , y setea el inicio de la libreria
+      */
+    const char* glsl_version = "#version 130";//version del shader usada para unir imgui con opengl3
+    ImGui::CreateContext();
+    ImGuiIO& io = ImGui::GetIO(); (void)io;
+    //io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;  // Enable Keyboard Controls
+    //io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;   // Enable Gamepad Controls
+
+    ImGui_ImplGlfw_InitForOpenGL(g_window, true);//une la libreria con glfw
+    ImGui_ImplOpenGL3_Init(glsl_version);//une la libreria con opengl
+
+    // Setup style
+    ImGui::StyleColorsDark();//setea el estilo de la ventana , igual puede ser clara
 	
     while (!glfwWindowShouldClose(g_window)){
 
@@ -55,8 +73,14 @@ int main()
         deltaTime = currentFrame - lastFrame;
         lastFrame = currentFrame;
         timef+=deltaTime;
+        /*inicializa los frames*/
+        ImGui_ImplOpenGL3_NewFrame();
+        ImGui_ImplGlfw_NewFrame();
+        ImGui::NewFrame();
 
-        processInput(g_window);
+        if(inGame){
+            processInput(g_window);
+        }
         // render
         // ------
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
@@ -97,12 +121,54 @@ int main()
 		/*e1->setPosition(glm::vec3(4.0f,-1.0f,0.0f));
         glBindVertexArray(e1->getVao());
         e1->draw(model_mat_location);
-*/        
+
+        //funcion donde se define lo que se dibuja de la GUI
+*/      GUILayout();
+
+        //funcion propia de imgui 
+        ImGui::Render();
+        //hace lo que creen que hace
+        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
         glfwSwapBuffers(g_window);
         glfwPollEvents();
     }
+
+    //limpia todo
+    ImGui_ImplOpenGL3_Shutdown();
+    ImGui_ImplGlfw_Shutdown();
+    ImGui::DestroyContext();
+
     glfwTerminate();
     return 0;
+}
+
+void GUILayout(){
+    
+            static float f = 0.0f;
+            static int counter = 0;
+
+            ImGui::Begin("Hello, world!");                          // Create a window called "Hello, world!" and append into it.
+            ImGui::Text("This is some useful text.");               // Display some text (you can use a format strings too) // Edit 3 floats representing a color
+
+            if (ImGui::Button("Jugar")) {                           // Buttons return true when clicked (most widgets return true when edited/activated)
+                activarMouse();
+                inGame=true;
+            }else if(ImGui::Button("Salir")){
+                glfwSetWindowShouldClose(g_window, true);
+            }
+
+            ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+            ImGui::End();
+        
+}
+
+
+void activarMouse(){
+    glfwSetCursorPosCallback(g_window, mouse_callback);
+	glfwSetScrollCallback(g_window, scroll_callback);
+    
+	// Le decimos a GLFW que capture nuestro mouse
+	glfwSetInputMode(g_window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 }
 
 void Init(){
@@ -111,7 +177,7 @@ void Init(){
 	start_gl();
 	//Funciones propias de GL
 	glEnable (GL_DEPTH_TEST);
-	glDepthFunc (GL_LESS);
+	glDepthFunc ( GL_LESS);
 	glEnable (GL_CULL_FACE);
 	glCullFace (GL_BACK);
 	glFrontFace (GL_CCW);
@@ -121,11 +187,12 @@ void Init(){
 	glfwSetFramebufferSizeCallback(g_window, framebuffer_size_callback);
 	
 	//ESTO SOLO DEBE INCLUIRSE POR AHORA, AL MOMENTO DE CONSTRUIR EL JUEGO, YA QUE NUESTRO JUEGO NO OCUPA MOUSE
-	glfwSetCursorPosCallback(g_window, mouse_callback);
-	glfwSetScrollCallback(g_window, scroll_callback);
+
+	//glfwSetCursorPosCallback(g_window, mouse_callback);
+	//glfwSetScrollCallback(g_window, scroll_callback);
     
 	// Le decimos a GLFW que capture nuestro mouse
-	glfwSetInputMode(g_window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+	//glfwSetInputMode(g_window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 	
 		/*-------------------------------Creamos Shaders-------------------------------*/
 	shader_programme = create_programme_from_files (
