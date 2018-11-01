@@ -41,7 +41,7 @@ class camera{
 		void setCameraFront(glm::vec3 front);
 		void setCameraUp();
 		void setView();
-		void setCameraPos();
+		void setCameraPos(glm::vec3 pos);
 		void setProjection(float fov);
 		void setViewMatLocation(GLuint shader_programme);
 		void setProjMatLocation(GLuint shader_programme);

@@ -77,6 +77,13 @@ void camera::setCameraPos(int dir,float cameraSpeed){
 	}
 }
 
+void camera::setCameraPos(glm::vec3 pos)
+{
+	this->cPos.x = pos.x;
+	this->cPos.y = pos.y;
+	this->cPos.z = pos.z;
+}
+
 void camera::setCameraFront(glm::vec3 front){
 	this->cFront = glm::normalize(front);
 }

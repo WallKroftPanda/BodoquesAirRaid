@@ -15,11 +15,7 @@
 #include <iostream>
 #include "gl_utils.h"
 #include "tools.h"
-#include "airplane.h"
-#include "zeppelin.h"
 #include "malla.h"
-#include "camera.h"
-#include "suelo.h"
 
 //motor fisico
 #include <bullet/btBulletDynamicsCommon.h>

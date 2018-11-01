@@ -13,37 +13,24 @@ using namespace std;
 
 airplane::airplane(char* filename){
     this->filename = filename;
-    this->position = glm::vec3(0,0,0);
+    this->pos = glm::vec3(0,0,0);
     this->rotation = glm::vec3(0,1,0);
     this->angle = 0.0f;
     this->life = 100.0f;
-    assert(load_mesh(filename,&vao,&numVertices));
+    this->posicion = btVector3(0,10,0);
+    this->rotacion = btQuaternion(0.f,1.f,0.f,0.f);
+    assert(Malla::load_mesh(filename,&vao,&numVertices));
 }
 
-GLuint airplane::getVao(){
-    return this->vao;
-}
-int airplane::getNumVertices(){
-    return this->numVertices;
-}
 float airplane::getLife(){
     return this->life;
 }
 int airplane::getBullets(){
     return this->bullets;
 }
-glm::vec3 airplane::getPosition(){
-    return this->position;
-}
+
 glm::vec3 airplane::getRotation(){
     return this->rotation;
-}
-char* airplane::getFilename(){
-    return this->filename;
-}
-void airplane::setPosition(glm::vec3 pos,int model){
-    T = glm::translate(glm::mat4(1.0f),pos);
-    glUniformMatrix4fv(model, 1,GL_FALSE, glm::value_ptr(T));
 }
 
 void airplane::setRotation(float ang, glm::vec3 rot, int model){
@@ -51,9 +38,6 @@ void airplane::setRotation(float ang, glm::vec3 rot, int model){
         glUniformMatrix4fv(model, 1,GL_FALSE, glm::value_ptr(T));
 }
 
-void airplane::setModelMatrix(glm::mat4 model){
-    this->modelMatrix = model;
-}
 void airplane::setBullets(int bullet){
     this->bullets = bullet;
 }
