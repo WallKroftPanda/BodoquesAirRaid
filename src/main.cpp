@@ -4,28 +4,39 @@
 #include "imgui_impl_opengl3.h"
 //VARIABLES GLOBALES
 
+
 int g_gl_width = 1280;
 int g_gl_height = 720;
 GLFWwindow* g_window = NULL;
 GLuint shader_programme;
 //Posiciones de camara
 camera *camara;
-/*glm::vec3 cameraPos   = glm::vec3(0.0f, 10.0f, 0.0f);
+glm::vec3 cameraPos   = glm::vec3(0.0f, 10.0f, 0.0f);
 glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, -1.0f);
-glm::vec3 cameraUp    = glm::vec3(0.0f, 1.0f, 0.0f);*/
+glm::vec3 cameraUp    = glm::vec3(0.0f, 1.0f, 0.0f);
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 void processInput(GLFWwindow *window);
+btRigidBody* crearCuerpoRigido(float posX,float posY,float posZ,float masa,float alfa, float dirX,float dirY,float dirZ, btDiscreteDynamicsWorld* mundoFisico);
 void Init();
 void activarMouse();
 void GUILayout();
 
+// MOUSE
+bool firstMouse = true;
+float yaw   = -90.0f;	// yaw is initialized to -90.0 degrees since a yaw of 0.0 results in a direction vector pointing to the right so we initially rotate a bit to the left.
+float pitch =  0.0f;
+float lastX =  g_gl_width / 2.0;
+float lastY =  g_gl_height / 2.0;
+float fov   =  45.0f;
+/////
+
 float deltaTime;
 float timef;
 float lastFrame;
-float fov   =  16.0f;
+
 airplane* avion;
 bool inGame=false;
 int model_mat_location;
@@ -34,13 +45,25 @@ zeppelin *e1;
 suelo *elsuelo;
 malla *ElMono;
 malla *pickUp;
+malla *ball;
+
+glm::mat4 projection;
+glm::mat4 view;
+int view_mat_location;
+int proj_mat_location;
+
+
+
+btTransform ballTransform;
+btRigidBody* bodyBall;
+btRigidBody* bodySuelo;
 
 int main()
 {
 
+    printf("ahhhhhhhhhhhhhhh");
     Init();
-    
-    camara= new camera(glm::vec3(0.0f, 10.0f, 0.0f), glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f, 1.0f, 0.0f),g_gl_width,g_gl_height);
+    /*camara= new camera(glm::vec3(0.0f, 10.0f, 0.0f), glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f, 1.0f, 0.0f),g_gl_width,g_gl_height);
     
     camara->setProjection(fov);
     
@@ -48,56 +71,94 @@ int main()
 
 	camara->setViewMatLocation(shader_programme);
 	
-	camara->setProjMatLocation(shader_programme);
+	camara->setProjMatLocation(shader_programme);*/
     int model_mat_location = glGetUniformLocation(shader_programme, "model");
 	glm::vec3 cam;
 
-    /* crea un contexto ,usado por imgui , y setea el inicio de la libreria
-      */
-    const char* glsl_version = "#version 130";//version del shader usada para unir imgui con opengl3
+    //crea un contexto ,usado por imgui , y setea el inicio de la libreria
+      
+    /*const char* glsl_version = "#version 130";//version del shader usada para unir imgui con opengl3
     ImGui::CreateContext();
     ImGuiIO& io = ImGui::GetIO(); (void)io;
-    //io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;  // Enable Keyboard Controls
-    //io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;   // Enable Gamepad Controls
+    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;  // Enable Keyboard Controls
+    io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;   // Enable Gamepad Controls
 
     ImGui_ImplGlfw_InitForOpenGL(g_window, true);//une la libreria con glfw
-    ImGui_ImplOpenGL3_Init(glsl_version);//une la libreria con opengl
+    ImGui_ImplOpenGL3_Init(glsl_version);//une la libreria con opengl*/
+    
+
+
+
+    // Configuracion inical del mundo fisico Bullet
+	btDefaultCollisionConfiguration* collisionConfiguration = new btDefaultCollisionConfiguration();
+	btCollisionDispatcher* dispatcher = new btCollisionDispatcher(collisionConfiguration);
+	btBroadphaseInterface* overlappingPairCache = new btDbvtBroadphase();
+	btSequentialImpulseConstraintSolver* solver = new btSequentialImpulseConstraintSolver;
+
+    btDiscreteDynamicsWorld* dynamicsWorld = new btDiscreteDynamicsWorld(dispatcher, overlappingPairCache, solver, collisionConfiguration);
+
+    dynamicsWorld->setGravity(btVector3(0, -10, 0));
+
+    bodyBall = crearCuerpoRigido( 0.0 , 10.0, -10.0, 5.0,0.0,1.0,0.0,0.0,dynamicsWorld);
+    bodySuelo = crearCuerpoRigido(0.0f,-1.0f,  0.0f, 0.0,0.0,1.0,0.0,0.0,dynamicsWorld);
 
     // Setup style
-    ImGui::StyleColorsDark();//setea el estilo de la ventana , igual puede ser clara
+    //ImGui::StyleColorsDark();//setea el estilo de la ventana , igual puede ser clara
 	
+    glm::mat4 aux;
     while (!glfwWindowShouldClose(g_window)){
-
         //time
         float currentFrame = glfwGetTime();
         deltaTime = currentFrame - lastFrame;
+        if (deltaTime < 0.016f){
+            continue;
+        }
         lastFrame = currentFrame;
-        timef+=deltaTime;
-        /*inicializa los frames*/
+        /* inicializa los frames
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
-        ImGui::NewFrame();
+        ImGui::NewFrame();*/
 
-        if(inGame){
+        dynamicsWorld->stepSimulation(1.f / 60.f, 10);
+
             processInput(g_window);
+        if(inGame){
         }
-        // render
-        // ------
-        glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+        glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        cam = camara->getCameraPos();
-        cout<<cam.x<<","<<cam.y<<","<<cam.z<<endl;
-
-        // activate shader
 		glUseProgram (shader_programme);
 
-	    camara->setProjection(fov);
+        projection = glm::perspective(glm::radians(fov), (float)g_gl_width / (float)g_gl_height, 0.1f, 100.0f);
+        glUniformMatrix4fv (proj_mat_location, 1, GL_FALSE, &projection[0][0]);
 
-        camara->setView();
+        view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
+	    glUniformMatrix4fv(view_mat_location, 1, GL_FALSE, &view[0][0]);
+        // ------
+       
+        // activate shader
+        // render
+
+        // CREANDO CUERPOS RIGIDOS
+        ////////////////////////////////
+        btTransform trans;
+
+        bodyBall->getMotionState()->getWorldTransform(trans); // Se guarda la informacion de transformaciones de bodyBall en trans
+        // Y se obtiene la matrix model directamente desde bullet
+        trans.getOpenGLMatrix(&aux[0][0]);
+        ball->setModelMatrix(aux);
+        ball->draw(model_mat_location);
+
+        bodySuelo->getMotionState()->getWorldTransform(trans);
+        trans.getOpenGLMatrix(&aux[0][0]);
+        elsuelo->setModelMatrix(aux);
+        elsuelo->draw(model_mat_location);
+        ///w///////////////////////
+
+	    //camara->setProjection(fov);
+
+        //camara->setView();
         //Dibujar suelo
-        elsuelo->setPosition(glm::vec3(0.0f,-1.0f,0.0f),model_mat_location);
-        glBindVertexArray(elsuelo->getVao());
-        glDrawArrays(GL_TRIANGLES,0,elsuelo->getNumVertices());
+        
         //Dibujar avión
         bodoque->setPosition(glm::vec3(cam.x,cam.y-1,cam.z-15), model_mat_location);
         bodoque->setRotation(1.57f, glm::vec3(0,1,0),model_mat_location);
@@ -109,12 +170,12 @@ int main()
         glDrawArrays(GL_TRIANGLES,0,e1->getNumVertices());
 
         // DIBUJAR CAJA DE MUNICION
-        pickUp->setpos(glm::vec3(-10.0f,15.0f,-25.0f),model_mat_location);
+        pickUp->setpos(glm::vec3(-10.0f,15.0f,-25.0f));
         glBindVertexArray(pickUp->getvao());
         glDrawArrays(GL_TRIANGLES,0,pickUp->getnumvertices());
 
         //Dibujar ElMono
-        ElMono->setpos(glm::vec3(-30.0f,2.0f,5.0f), model_mat_location);
+        ElMono->setpos(glm::vec3(-30.0f,2.0f,5.0f));
         glBindVertexArray(ElMono->getvao());
         glDrawArrays(GL_TRIANGLES,0,ElMono->getnumvertices());
 
@@ -122,21 +183,21 @@ int main()
         glBindVertexArray(e1->getVao());
         e1->draw(model_mat_location);
 
-        //funcion donde se define lo que se dibuja de la GUI
-*/      GUILayout();
+        /*funcion donde se define lo que se dibuja de la GUI
+        GUILayout();
 
         //funcion propia de imgui 
         ImGui::Render();
         //hace lo que creen que hace
-        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());*/
         glfwSwapBuffers(g_window);
         glfwPollEvents();
     }
 
-    //limpia todo
+    /*limpia todo
     ImGui_ImplOpenGL3_Shutdown();
     ImGui_ImplGlfw_Shutdown();
-    ImGui::DestroyContext();
+    ImGui::DestroyContext();*/
 
     glfwTerminate();
     return 0;
@@ -188,22 +249,36 @@ void Init(){
 	
 	//ESTO SOLO DEBE INCLUIRSE POR AHORA, AL MOMENTO DE CONSTRUIR EL JUEGO, YA QUE NUESTRO JUEGO NO OCUPA MOUSE
 
-	//glfwSetCursorPosCallback(g_window, mouse_callback);
-	//glfwSetScrollCallback(g_window, scroll_callback);
+    glfwSetCursorPosCallback(g_window, mouse_callback);
+	glfwSetScrollCallback(g_window, scroll_callback);
     
 	// Le decimos a GLFW que capture nuestro mouse
-	//glfwSetInputMode(g_window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+	glfwSetInputMode(g_window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 	
 		/*-------------------------------Creamos Shaders-------------------------------*/
 	shader_programme = create_programme_from_files (
 	VERTEX_SHADER_FILE, FRAGMENT_SHADER_FILE);
-    model_mat_location=  glGetUniformLocation (shader_programme, "model");
     
     bodoque = new airplane((char*)"mallas/Hurricane.obj");
     e1 = new zeppelin((char*)"mallas/dirigible.obj");
    	elsuelo = new suelo((char*)"mallas/sueloRef.obj");
     ElMono = new malla((char*)"mallas/suzanne.obj");
     pickUp = new malla((char*) "mallas/caja.obj");
+    ball = new malla((char*)"mallas/ball.obj");
+
+    projection = glm::perspective(glm::radians(fov), (float)g_gl_width / (float)g_gl_height, 0.1f, 100.0f);
+    view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
+
+	view_mat_location = glGetUniformLocation (shader_programme, "view");
+	glUseProgram (shader_programme);
+	glUniformMatrix4fv(view_mat_location, 1, GL_FALSE, &view[0][0]);
+	proj_mat_location = glGetUniformLocation (shader_programme, "proj");
+	glUseProgram (shader_programme);
+	glUniformMatrix4fv (proj_mat_location, 1, GL_FALSE, &projection[0][0]);
+
+    model_mat_location=  glGetUniformLocation (shader_programme, "model");
+
+    printf("sadada");
 }
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height){
@@ -216,19 +291,48 @@ void processInput(GLFWwindow *window)
 {
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         glfwSetWindowShouldClose(window, true);
+
     float cameraSpeed = 25 * deltaTime;
     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-        camara->setCameraPos(8,cameraSpeed);
+        cameraPos += cameraSpeed * cameraFront;
     if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-		camara->setCameraPos(2,cameraSpeed);
+        cameraPos -= cameraSpeed * cameraFront;
     if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-        camara->setCameraPos(4,cameraSpeed);
+        cameraPos -= glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
     if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-        camara->setCameraPos(6,cameraSpeed);
+        cameraPos += glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
 }
 //Camara casi completamente migrada, esta función se me hace un problema, ya que se llama a esta función en INIT(), al quererla reemplazar dire3ctamente con la funcion camara->actualizar(), me daba error, por lo que decidí dejarla tal cual está, y llamar a "actualizar dentro de esta.
 void mouse_callback(GLFWwindow* window, double xpos, double ypos){
-		camara->actualizar(xpos, ypos);
+		if (firstMouse){
+        lastX = xpos;
+        lastY = ypos;
+        firstMouse = false;
+    }
+
+    float xoffset = xpos - lastX;
+    float yoffset = lastY - ypos; // reversed since y-coordinates go from bottom to top
+    lastX = xpos;
+    lastY = ypos;
+
+    float sensitivity = 0.1f; // change this value to your liking
+    xoffset *= sensitivity;
+    yoffset *= sensitivity;
+
+    yaw += xoffset;
+    pitch += yoffset;
+
+    // make sure that when pitch is out of bounds, screen doesn't get flipped
+    if (pitch > 89.0f)
+        pitch = 89.0f;
+    if (pitch < -89.0f)
+        pitch = -89.0f;
+
+    glm::vec3 front;
+    front.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
+    front.y = sin(glm::radians(pitch));
+    front.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
+    cameraFront = glm::normalize(front);
 }
 
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset){
@@ -238,8 +342,65 @@ void scroll_callback(GLFWwindow* window, double xoffset, double yoffset){
         fov = 1.0f;
     if (fov >= 45.0f)
         fov = 45.0f;
-       
 }
+
+btRigidBody* crearCuerpoRigido(float posX,float posY,float posZ,float masa,float alfa, float dirX,float dirY,float dirZ, btDiscreteDynamicsWorld* mundoFisico){
+
+    btCollisionShape* Shape = new btBoxShape(btVector3(25.0,5.,25.0));
+
+    btTransform Transform;
+    Transform.setIdentity();
+    Transform.setOrigin(btVector3(posX,posY,posZ)); // Posicion incial
+    btScalar Mass(masa); // Masa
+
+    bool isDynamic = (Mass != 0.f);
+    Transform.setRotation(btQuaternion(alfa,dirX,dirY,dirZ));
+
+    btVector3 localInertia(1, 0, 0);
+    if (isDynamic)
+        Shape->calculateLocalInertia(Mass, localInertia);
+
+    btDefaultMotionState* MotionState = new btDefaultMotionState(Transform);
+    btRigidBody::btRigidBodyConstructionInfo RbInfo(Mass, MotionState, Shape, localInertia);
+    btRigidBody* body = new btRigidBody(RbInfo);
+    body->setActivationState(DISABLE_DEACTIVATION);     
+    
+    mundoFisico->addRigidBody(body);
+    return body;
+}
+
+/*void figuraColisionadora(int convex){
+    btCollisionShape* newShape;
+    if (convex)
+    {
+        //2
+        newShape = new btConvexHullShape();
+        for (int i = 0; i < vertexCount; i++)
+        {
+            Vertex v = vertices[i];
+            btVector3 btv = btVector3(v.Position[0], v.Position[1], v.Position[2]);
+            ((btConvexHullShape*)newShape)->addPoint(btv);
+        }
+    }
+    else
+    {
+        //3
+        btTriangleMesh* mesh = new btTriangleMesh();
+        for (int i=0; i < vertexCount; i += 3)
+        {
+            Vertex v1 = vertices[i];
+            Vertex v2 = vertices[i+1];
+            Vertex v3 = vertices[i+2];
+            
+            btVector3 bv1 = btVector3(v1.Position[0], v1.Position[1], v1.Position[2]);
+            btVector3 bv2 = btVector3(v2.Position[0], v2.Position[1], v2.Position[2]);
+            btVector3 bv3 = btVector3(v3.Position[0], v3.Position[1], v3.Position[2]);
+            
+            mesh->addTriangle(bv1, bv2, bv3);
+        }        
+           newShape = new btBvhTriangleMeshShape(mesh, true);
+    }
+}*/
 
 void Logica(){
     /*

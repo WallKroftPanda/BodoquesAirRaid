@@ -12,8 +12,10 @@
 
 using namespace std;
 malla::malla(char* filename){
-    glm::vec3 pos = glm::vec3(0,0,0);
-	this->filename = filename;
+    this->filename = filename;
+    this->pos = glm::vec3(0, 0, 0);
+    this->rotation = glm::vec3(0, 1, 0);
+    this->angle = 0.0f;
 	assert(load_mesh(filename, &vao, &numvertices));
 }
 
@@ -26,14 +28,32 @@ int malla::getnumvertices(){
 }
 
 glm::vec3 malla::getpos(){
-    return this->getpos();
+    return this->pos;
+}
+
+glm::vec3 malla::getRotation(){
+    return this->rotation;
 }
 
 char* malla::getfilename(){
     return this->filename;
 }
 
-void malla::setpos(glm::vec3 p, int model){
-    glm::mat4 T = glm::translate(glm::mat4(1.0f),p);
-    glUniformMatrix4fv(model, 1,GL_FALSE, glm::value_ptr(T));
+void malla::setpos(glm::vec3 p){
+        this->pos = p;
+}
+
+void malla::setRotation(float ang, glm::vec3 rot){
+        this->rotation = rot;
+        this->angle = ang;
+}
+
+void malla::setModelMatrix(glm::mat4 model){
+    this->modelMatrix = model;
+}
+
+void malla::draw(int matloc){
+	    glUniformMatrix4fv(matloc, 1, GL_FALSE, &this->modelMatrix[0][0]);
+        glBindVertexArray(this->getvao());
+        glDrawArrays(GL_TRIANGLES, 0, this->getnumvertices());
 }
