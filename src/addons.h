@@ -18,6 +18,7 @@
 #include "airplane.h"
 #include "zeppelin.h"
 #include "malla.h"
+#include "helice.h"
 #include "camera.h"
 #include "suelo.h"
 

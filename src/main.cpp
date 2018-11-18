@@ -2,6 +2,7 @@
 #include "imgui.h"
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_opengl3.h"
+#include "GLDebugDrawer.hpp"
 //VARIABLES GLOBALES
 
 
@@ -40,12 +41,18 @@ float lastFrame;
 airplane* avion;
 bool inGame=false;
 int model_mat_location;
+
 airplane *bodoque;
 zeppelin *e1;
 suelo *elsuelo;
 malla *ElMono;
 malla *pickUp;
 malla *ball;
+
+malla *aletasT;
+malla *aletasL;
+malla *aletaT;
+helice *heli;
 
 glm::mat4 projection;
 glm::mat4 view;
@@ -104,9 +111,22 @@ int main()
 
     // Setup style
     //ImGui::StyleColorsDark();//setea el estilo de la ventana , igual puede ser clara
+    
+	GLDebugDrawer* debug = new GLDebugDrawer();
+	debug->setDebugMode(btIDebugDraw::DBG_DrawWireframe );
+	debug->setView(&view);
+	debug->setProj(&projection);
+	dynamicsWorld->setDebugDrawer(debug);
 	
     glm::mat4 aux;
+
     while (!glfwWindowShouldClose(g_window)){
+    	
+    	debug->setView(&view);
+		debug->setProj(&projection);
+		dynamicsWorld->debugDrawWorld();
+		debug->drawLines();
+		
         //time
         float currentFrame = glfwGetTime();
         deltaTime = currentFrame - lastFrame;
@@ -164,6 +184,7 @@ int main()
         bodoque->setRotation(1.57f, glm::vec3(0,1,0),model_mat_location);
         glBindVertexArray(bodoque->getVao());
         glDrawArrays(GL_TRIANGLES,0,bodoque->getNumVertices());
+        
         //Dibujar zeppelin
         e1->setPosition(glm::vec3(-21.0f,10.0f,-50.0f), model_mat_location);
         glBindVertexArray(e1->getVao());
@@ -198,7 +219,6 @@ int main()
     ImGui_ImplOpenGL3_Shutdown();
     ImGui_ImplGlfw_Shutdown();
     ImGui::DestroyContext();*/
-
     glfwTerminate();
     return 0;
 }
@@ -265,6 +285,10 @@ void Init(){
     ElMono = new malla((char*)"mallas/suzanne.obj");
     pickUp = new malla((char*) "mallas/caja.obj");
     ball = new malla((char*)"mallas/ball.obj");
+	aletasT = new malla((char*)"mallas/aletas_traseras.obj");
+	aletasL = new malla((char*)"mallas/aletas_laterales.obj");
+	aletaT = new malla((char*)"mallas/aleta_trasera_vert.obj");
+	heli = new helice((char*)"mallas/hélice.obj");
 
     projection = glm::perspective(glm::radians(fov), (float)g_gl_width / (float)g_gl_height, 0.1f, 100.0f);
     view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
