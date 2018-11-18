@@ -3,6 +3,7 @@
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_opengl3.h"
 #include "GLDebugDrawer.hpp"
+
 //VARIABLES GLOBALES
 
 
@@ -20,7 +21,7 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 void processInput(GLFWwindow *window);
-btRigidBody* crearCuerpoRigido(float posX,float posY,float posZ,float masa,float alfa, float dirX,float dirY,float dirZ, btDiscreteDynamicsWorld* mundoFisico);
+btRigidBody* crearCuerpoRigido(float posX,float posY,float posZ,float masa,float alfa, float dirX,float dirY,float dirZ, float colX, float colY, float colZ, btDiscreteDynamicsWorld* mundoFisico);
 void Init();
 void activarMouse();
 void GUILayout();
@@ -65,12 +66,15 @@ btTransform ballTransform;
 btRigidBody* bodyBall;
 btRigidBody* bodySuelo;
 
+btRigidBody* bodyHurri;
+btRigidBody* bodyZep;
+
 int main()
 {
 
     printf("ahhhhhhhhhhhhhhh");
     Init();
-    /*camara= new camera(glm::vec3(0.0f, 10.0f, 0.0f), glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f, 1.0f, 0.0f),g_gl_width,g_gl_height);
+    camara= new camera(glm::vec3(0.0f, 10.0f, 0.0f), glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f, 1.0f, 0.0f),g_gl_width,g_gl_height);
     
     camara->setProjection(fov);
     
@@ -78,9 +82,9 @@ int main()
 
 	camara->setViewMatLocation(shader_programme);
 	
-	camara->setProjMatLocation(shader_programme);*/
+	camara->setProjMatLocation(shader_programme);
     int model_mat_location = glGetUniformLocation(shader_programme, "model");
-	glm::vec3 cam;
+	glm::vec3 cam=camara->getCameraPos();
 
     //crea un contexto ,usado por imgui , y setea el inicio de la libreria
       
@@ -101,13 +105,17 @@ int main()
 	btCollisionDispatcher* dispatcher = new btCollisionDispatcher(collisionConfiguration);
 	btBroadphaseInterface* overlappingPairCache = new btDbvtBroadphase();
 	btSequentialImpulseConstraintSolver* solver = new btSequentialImpulseConstraintSolver;
-
+	// Creacion del mundo fisico - Uno por aplicacion
     btDiscreteDynamicsWorld* dynamicsWorld = new btDiscreteDynamicsWorld(dispatcher, overlappingPairCache, solver, collisionConfiguration);
-
+	// Vector de gravedad
     dynamicsWorld->setGravity(btVector3(0, -10, 0));
+    //btRigidBody* crearCuerpoRigido(float posX,float posY,float posZ,float masa,float alfa, float dirX,float dirY,float dirZ, btDiscreteDynamicsWorld* mundoFisico){
 
-    bodyBall = crearCuerpoRigido( 0.0 , 10.0, -10.0, 5.0,0.0,1.0,0.0,0.0,dynamicsWorld);
-    bodySuelo = crearCuerpoRigido(0.0f,-1.0f,  0.0f, 0.0,0.0,1.0,0.0,0.0,dynamicsWorld);
+    bodyBall = crearCuerpoRigido( 0.0 , 10.0, -10.0, 5.0,0.0,1.0,0.0,0.0,1.0,1.0,1.0,dynamicsWorld);
+    bodySuelo = crearCuerpoRigido(0.0f,1.0f,  0.0f, 0.0,0.0,0.0,0.0,1.0,50.0,1.0,50.0,dynamicsWorld);
+    
+    bodyZep =crearCuerpoRigido(-21.0f,10.0f,-50.0f,0.0f,0,0,0,1.0f,25.0,3.0,3.0,dynamicsWorld);
+    bodyHurri =crearCuerpoRigido(cam.x,cam.y-1.0f,cam.z-15.0f,0.5f,0.0f,1.0f,0.0f,1.0f,3.0,1.0,3.0,dynamicsWorld);
 
     // Setup style
     //ImGui::StyleColorsDark();//setea el estilo de la ventana , igual puede ser clara
@@ -167,11 +175,18 @@ int main()
         trans.getOpenGLMatrix(&aux[0][0]);
         ball->setModelMatrix(aux);
         ball->draw(model_mat_location);
-
+		
+		//mapa
         bodySuelo->getMotionState()->getWorldTransform(trans);
         trans.getOpenGLMatrix(&aux[0][0]);
         elsuelo->setModelMatrix(aux);
         elsuelo->draw(model_mat_location);
+        
+        //Hurricane
+        bodyHurri->getMotionState()->getWorldTransform(trans);
+        trans.getOpenGLMatrix(&aux[0][0]);
+        bodoque->setModelMatrix(aux);
+        bodoque->draw(model_mat_location);
         ///w///////////////////////
 
 	    //camara->setProjection(fov);
@@ -179,16 +194,11 @@ int main()
         //camara->setView();
         //Dibujar suelo
         
-        //Dibujar avión
-        bodoque->setPosition(glm::vec3(cam.x,cam.y-1,cam.z-15), model_mat_location);
-        bodoque->setRotation(1.57f, glm::vec3(0,1,0),model_mat_location);
-        glBindVertexArray(bodoque->getVao());
-        glDrawArrays(GL_TRIANGLES,0,bodoque->getNumVertices());
-        
         //Dibujar zeppelin
-        e1->setPosition(glm::vec3(-21.0f,10.0f,-50.0f), model_mat_location);
-        glBindVertexArray(e1->getVao());
-        glDrawArrays(GL_TRIANGLES,0,e1->getNumVertices());
+        bodyZep->getMotionState()->getWorldTransform(trans);
+        trans.getOpenGLMatrix(&aux[0][0]);
+        e1->setModelMatrix(aux);
+        e1->draw(model_mat_location);
 
         // DIBUJAR CAJA DE MUNICION
         pickUp->setpos(glm::vec3(-10.0f,15.0f,-25.0f));
@@ -211,6 +221,10 @@ int main()
         ImGui::Render();
         //hace lo que creen que hace
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());*/
+        debug->setView(&view);
+		debug->setProj(&projection);
+		dynamicsWorld->debugDrawWorld();
+		debug->drawLines();
         glfwSwapBuffers(g_window);
         glfwPollEvents();
     }
@@ -325,6 +339,15 @@ void processInput(GLFWwindow *window)
         cameraPos -= glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
     if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
         cameraPos += glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
+    if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
+        bodyHurri->applyCentralImpulse( btVector3( 0.f, 0.f, -1.0f));
+    if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
+        bodyHurri->applyCentralImpulse( btVector3( 0.f, 0.f, 1.0f));
+    if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS)
+        bodyHurri->applyCentralImpulse( btVector3( -1.f, 0.f, 0.f));
+    if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS)
+        bodyHurri->applyCentralImpulse( btVector3( 1.f, 0.f, 0.f));
+     
 }
 //Camara casi completamente migrada, esta función se me hace un problema, ya que se llama a esta función en INIT(), al quererla reemplazar dire3ctamente con la funcion camara->actualizar(), me daba error, por lo que decidí dejarla tal cual está, y llamar a "actualizar dentro de esta.
 void mouse_callback(GLFWwindow* window, double xpos, double ypos){
@@ -368,9 +391,9 @@ void scroll_callback(GLFWwindow* window, double xoffset, double yoffset){
         fov = 45.0f;
 }
 
-btRigidBody* crearCuerpoRigido(float posX,float posY,float posZ,float masa,float alfa, float dirX,float dirY,float dirZ, btDiscreteDynamicsWorld* mundoFisico){
+btRigidBody* crearCuerpoRigido(float posX,float posY,float posZ,float masa,float alfa, float dirX,float dirY,float dirZ, float colX, float colY, float colZ, btDiscreteDynamicsWorld* mundoFisico){
 
-    btCollisionShape* Shape = new btBoxShape(btVector3(25.0,5.,25.0));
+    btCollisionShape* Shape = new btBoxShape(btVector3(colX,colY,colZ));
 
     btTransform Transform;
     Transform.setIdentity();

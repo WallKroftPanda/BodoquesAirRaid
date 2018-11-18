@@ -12,6 +12,7 @@ class airplane/*: public malla*/{
         int bullets;
         char* filename;
         glm::vec3 position;
+        glm::vec3 front;
         float angle;
         glm::vec3 rotation;
         glm::vec3 scale;
@@ -23,6 +24,7 @@ class airplane/*: public malla*/{
         GLuint getVao();
         int getNumVertices();
         int getBullets();
+        glm::vec3 getFront();
         float getLife();
         glm::vec3 getPosition();
         glm::vec3 getRotation();

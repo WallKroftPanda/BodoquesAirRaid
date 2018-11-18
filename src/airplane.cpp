@@ -14,7 +14,6 @@ using namespace std;
 airplane::airplane(char* filename){
     this->filename = filename;
     this->position = glm::vec3(0,0,0);
-    this->rotation = glm::vec3(0,1,0);
     this->angle = 0.0f;
     this->life = 100.0f;
     assert(load_mesh(filename,&vao,&numVertices));
@@ -31,6 +30,9 @@ float airplane::getLife(){
 }
 int airplane::getBullets(){
     return this->bullets;
+}
+glm::vec3 airplane::getFront(){
+	return this->front;
 }
 glm::vec3 airplane::getPosition(){
     return this->position;
