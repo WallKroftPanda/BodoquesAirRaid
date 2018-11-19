@@ -3,6 +3,8 @@
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_opengl3.h"
 #include "GLDebugDrawer.hpp"
+#include "irrKlang.h"
+using namespace irrklang;
 
 //VARIABLES GLOBALES
 
@@ -38,6 +40,9 @@ float fov   =  45.0f;
 float deltaTime;
 float timef;
 float lastFrame;
+
+//sonido
+ISoundEngine *SoundEngine;
 
 airplane* avion;
 bool inGame=false;
@@ -268,6 +273,7 @@ void activarMouse(){
 
 void Init(){
 	//Funciones contenidas en gl_utils.cpp
+	
 	restart_gl_log ();
 	start_gl();
 	//Funciones propias de GL
@@ -315,7 +321,13 @@ void Init(){
 	glUniformMatrix4fv (proj_mat_location, 1, GL_FALSE, &projection[0][0]);
 
     model_mat_location=  glGetUniformLocation (shader_programme, "model");
-
+    
+	SoundEngine = createIrrKlangDevice();
+	if (!SoundEngine)
+	{
+		printf("Could not startup engine\n");
+	}
+	SoundEngine->play2D("src/juego.ogg", true);
     printf("sadada");
 }
 
