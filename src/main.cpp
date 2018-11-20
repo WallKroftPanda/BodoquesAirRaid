@@ -439,7 +439,8 @@ void Init(){
 	{
 		printf("Could not startup engine\n");
 	}
-	//SoundEngine->play2D("src/juego.ogg", true);
+	SoundEngine->play2D("src/juego.ogg", true);
+	SoundEngine->play2D("src/plane.ogg", true);
     printf("sadada");
 }
 
