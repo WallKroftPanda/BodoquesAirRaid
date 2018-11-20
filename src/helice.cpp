@@ -45,7 +45,8 @@ void helice::setpos(glm::vec3 p){
 
 void helice::setRotation(float ang, glm::vec3 rot){
         this->rotation = rot;
-        this->angle = ang;
+        this->angle = angle + ang;
+        this->modelMatrix = glm::rotate(modelMatrix,angle,rot);	
 }
 
 void helice::setModelMatrix(glm::mat4 model){

@@ -192,6 +192,15 @@ int main()
         trans.getOpenGLMatrix(&aux[0][0]);
         bodoque->setModelMatrix(aux);
         bodoque->draw(model_mat_location);
+        aletasT->setModelMatrix(aux);
+        aletasL->setModelMatrix(aux);
+        aletaT->setModelMatrix(aux);
+        aletasT->draw(model_mat_location);
+        aletasL->draw(model_mat_location);
+        aletaT->draw(model_mat_location);
+        heli->setModelMatrix(aux);
+        heli->setRotation(1,glm::vec3(1,0,0));
+        heli->draw(model_mat_location);
         ///w///////////////////////
 
 	    //camara->setProjection(fov);
