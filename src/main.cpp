@@ -261,13 +261,13 @@ int main()
 		
 		glUseProgram (skybox_shader);
 		glUniformMatrix4fv(view_skybox, 1, GL_FALSE, &view[0][0]);
-		
-		glUseProgram (shader_programme);
 
 		
-		
+		glUseProgram (shader_programme);
         view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
 	    glUniformMatrix4fv(view_mat_location, 1, GL_FALSE, &view[0][0]);
+	    
+	    
         // ------
        
 		//glUniformMatrix4fv(view_mat_location, 1, GL_FALSE, &view[0][0]);
@@ -340,10 +340,12 @@ int main()
         ImGui::Render();
         //hace lo que creen que hace
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());*/
-        debug->setView(&view);
+        
+        //Dibujar Collisionshapes
+        /*debug->setView(&view);
 		debug->setProj(&projection);
 		dynamicsWorld->debugDrawWorld();
-		debug->drawLines();
+		debug->drawLines();*/
 
         if(bodyHurri->getCenterOfMassPosition().getY()<=75)
         {
@@ -451,8 +453,8 @@ void Init(){
 	{
 		printf("Could not startup engine\n");
 	}
-	SoundEngine->play2D("src/juego.ogg", true);
-	SoundEngine->play2D("src/plane.ogg", true);
+	SoundEngine->play2D("src/epic.ogg", true);
+	//SoundEngine->play2D("src/plane.ogg", true);
     printf("sadada");
 }
 
