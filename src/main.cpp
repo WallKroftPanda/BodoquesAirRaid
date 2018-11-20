@@ -4,8 +4,15 @@
 #include "imgui_impl_opengl3.h"
 #include "GLDebugDrawer.hpp"
 #include "irrKlang.h"
+#define STB_IMAGE_IMPLEMENTATION
+#include "stb_image.h"
+
+
 using namespace irrklang;
 
+
+#define SKYBOX_VERTEX_SHADER_FILE "shaders/sky_vert.glsl"
+#define SKYBOX_FRAGMENT_SHADER_FILE "shaders/sky_frag.glsl"
 //VARIABLES GLOBALES
 
 
@@ -27,7 +34,27 @@ btRigidBody* crearCuerpoRigido(float posX,float posY,float posZ,float masa,float
 void Init();
 void activarMouse();
 void GUILayout();
+bool load_cube_map_side( GLuint texture, GLenum side_target, const char *file_name ) {
+	
+	glBindTexture( GL_TEXTURE_CUBE_MAP, texture );
 
+	int x, y, n;
+	int force_channels = 4;
+	unsigned char *image_data = stbi_load( file_name, &x, &y, &n, force_channels );
+	if ( !image_data ) {
+		fprintf( stderr, "ERROR: could not load %s\n", file_name );
+		return false;
+	}
+	// non-power-of-2 dimensions check
+	if ( ( x & ( x - 1 ) ) != 0 || ( y & ( y - 1 ) ) != 0 ) {
+		fprintf( stderr, "WARNING: image %s is not power-of-2 dimensions\n", file_name );
+	}
+
+	// copy image data into 'target' side of cube map
+	glTexImage2D( side_target, 0, GL_RGBA, x, y, 0, GL_RGBA, GL_UNSIGNED_BYTE, image_data );
+	free( image_data );
+	return true;
+}
 // MOUSE
 bool firstMouse = true;
 float yaw   = -90.0f;	// yaw is initialized to -90.0 degrees since a yaw of 0.0 results in a direction vector pointing to the right so we initially rotate a bit to the left.
@@ -50,6 +77,7 @@ int model_mat_location;
 
 airplane *bodoque;
 zeppelin *e1;
+//sky skycube;
 suelo *elsuelo;
 malla *ElMono;
 malla *pickUp;
@@ -76,9 +104,40 @@ btRigidBody* bodyZep;
 
 int main()
 {
+    float points[] = {
+		-500.0f, 500.0f,	-500.0f, -500.0f, -500.0f, -500.0f, 500.0f,	-500.0f, -500.0f,
+		500.0f,	-500.0f, -500.0f, 500.0f,	500.0f,	-500.0f, -500.0f, 500.0f,	-500.0f,
 
-    printf("ahhhhhhhhhhhhhhh");
+		-500.0f, -500.0f, 500.0f,	-500.0f, -500.0f, -500.0f, -500.0f, 500.0f,	-500.0f,
+		-500.0f, 500.0f,	-500.0f, -500.0f, 500.0f,	500.0f,	-500.0f, -500.0f, 500.0f,
+
+		500.0f,	-500.0f, -500.0f, 500.0f,	-500.0f, 500.0f,	500.0f,	500.0f,	500.0f,
+		500.0f,	500.0f,	500.0f,	500.0f,	500.0f,	-500.0f, 500.0f,	-500.0f, -500.0f,
+
+		-500.0f, -500.0f, 500.0f,	-500.0f, 500.0f,	500.0f,	500.0f,	500.0f,	500.0f,
+		500.0f,	500.0f,	500.0f,	500.0f,	-500.0f, 500.0f,	-500.0f, -500.0f, 500.0f,
+
+		-500.0f, 500.0f,	-500.0f, 500.0f,	500.0f,	-500.0f, 500.0f,	500.0f,	500.0f,
+		500.0f,	500.0f,	500.0f,	-500.0f, 500.0f,	500.0f,	-500.0f, 500.0f,	-500.0f,
+
+		-500.0f, -500.0f, -500.0f, -500.0f, -500.0f, 500.0f,	500.0f,	-500.0f, -500.0f,
+		500.0f,	-500.0f, -500.0f, -500.0f, -500.0f, 500.0f,	500.0f,	-500.0f, 500.0f
+	};
+
     Init();
+    GLuint vbosky;
+	glGenBuffers( 1, &vbosky );
+	glBindBuffer( GL_ARRAY_BUFFER, vbosky );
+	glBufferData( GL_ARRAY_BUFFER, 3 * 36 * sizeof( GLfloat ), &points,
+								GL_STATIC_DRAW );
+
+	GLuint vaosky;
+	glGenVertexArrays( 1, &vaosky );
+	glBindVertexArray( vaosky );
+	glEnableVertexAttribArray( 0 );
+	glBindBuffer( GL_ARRAY_BUFFER, vbosky );
+	glVertexAttribPointer( 0, 3, GL_FLOAT, GL_FALSE, 0, NULL );
+
     camara= new camera(glm::vec3(0.0f, 10.0f, 0.0f), glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f, 1.0f, 0.0f),g_gl_width,g_gl_height);
     
     camara->setProjection(fov);
@@ -133,6 +192,34 @@ int main()
 	
     glm::mat4 aux;
 
+
+    GLuint skybox_shader = create_programme_from_files ( SKYBOX_VERTEX_SHADER_FILE, SKYBOX_FRAGMENT_SHADER_FILE);
+	glUseProgram (skybox_shader);
+
+	int view_skybox = glGetUniformLocation (skybox_shader, "view");
+	int proj_skybox = glGetUniformLocation (skybox_shader, "proj");
+	glUniformMatrix4fv (view_skybox, 1, GL_FALSE, &view[0][0]);
+	glUniformMatrix4fv (proj_skybox, 1, GL_FALSE, &projection[0][0]);
+		
+
+
+	GLuint cube_map_texture;
+	glActiveTexture( GL_TEXTURE0 );
+	glGenTextures( 1, &cube_map_texture );
+
+	 load_cube_map_side( cube_map_texture, GL_TEXTURE_CUBE_MAP_POSITIVE_Z, "textures/back.jpg" );
+	 load_cube_map_side( cube_map_texture, GL_TEXTURE_CUBE_MAP_NEGATIVE_Z, "textures/front.jpg"  );
+	 load_cube_map_side( cube_map_texture, GL_TEXTURE_CUBE_MAP_POSITIVE_Y, "textures/top.jpg" ) ;
+	 load_cube_map_side( cube_map_texture, GL_TEXTURE_CUBE_MAP_NEGATIVE_Y, "textures/bottom.jpg"  );
+	 load_cube_map_side( cube_map_texture, GL_TEXTURE_CUBE_MAP_NEGATIVE_X, "textures/right.jpg" ) ;
+	 load_cube_map_side( cube_map_texture, GL_TEXTURE_CUBE_MAP_POSITIVE_X, "textures/left.jpg" ) ;
+
+	glTexParameteri( GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
+	glTexParameteri( GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
+	glTexParameteri( GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE );
+	glTexParameteri( GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
+	glTexParameteri( GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
+
     while (!glfwWindowShouldClose(g_window)){
     	
     	debug->setView(&view);
@@ -159,15 +246,27 @@ int main()
         }
         glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        	glUseProgram (skybox_shader);
+
+		glDepthMask( GL_FALSE );
+		glUseProgram( skybox_shader );
+		glActiveTexture( GL_TEXTURE0 );
+		glBindTexture( GL_TEXTURE_CUBE_MAP, cube_map_texture );
+		glBindVertexArray( vaosky );
+		glDrawArrays( GL_TRIANGLES, 0, 36 );
+		glDepthMask( GL_TRUE );
+
 		glUseProgram (shader_programme);
 
-        projection = glm::perspective(glm::radians(fov), (float)g_gl_width / (float)g_gl_height, 0.1f, 100.0f);
-        glUniformMatrix4fv (proj_mat_location, 1, GL_FALSE, &projection[0][0]);
 
         view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
 	    glUniformMatrix4fv(view_mat_location, 1, GL_FALSE, &view[0][0]);
         // ------
        
+		//glUniformMatrix4fv(view_mat_location, 1, GL_FALSE, &view[0][0]);
+			
+		glUseProgram (skybox_shader);
+		glUniformMatrix4fv(view_skybox, 1, GL_FALSE, &view[0][0]);
         // activate shader
         // render
 
@@ -319,7 +418,7 @@ void Init(){
 	aletaT = new malla((char*)"mallas/aleta_trasera_vert.obj");
 	heli = new helice((char*)"mallas/hélice.obj");
 
-    projection = glm::perspective(glm::radians(fov), (float)g_gl_width / (float)g_gl_height, 0.1f, 100.0f);
+    projection = glm::perspective(glm::radians(fov), (float)g_gl_width / (float)g_gl_height, 0.1f, 10000.0f);
     view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
 
 	view_mat_location = glGetUniformLocation (shader_programme, "view");
@@ -336,7 +435,7 @@ void Init(){
 	{
 		printf("Could not startup engine\n");
 	}
-	SoundEngine->play2D("src/juego.ogg", true);
+	//SoundEngine->play2D("src/juego.ogg", true);
     printf("sadada");
 }
 
