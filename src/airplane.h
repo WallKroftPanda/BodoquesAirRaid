@@ -29,6 +29,7 @@ class airplane/*: public malla*/{
         glm::vec3 getPosition();
         glm::vec3 getRotation();
         char* getFilename();
+        
 
         //setters
         void setVao(GLuint vao);

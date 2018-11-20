@@ -256,18 +256,21 @@ int main()
 		glBindVertexArray( vaosky );
 		glDrawArrays( GL_TRIANGLES, 0, 36 );
 		glDepthMask( GL_TRUE );
-
+		
+		glUseProgram (skybox_shader);
+		glUniformMatrix4fv(view_skybox, 1, GL_FALSE, &view[0][0]);
+		
 		glUseProgram (shader_programme);
 
-
+		
+		
         view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
 	    glUniformMatrix4fv(view_mat_location, 1, GL_FALSE, &view[0][0]);
         // ------
        
 		//glUniformMatrix4fv(view_mat_location, 1, GL_FALSE, &view[0][0]);
 			
-		glUseProgram (skybox_shader);
-		glUniformMatrix4fv(view_skybox, 1, GL_FALSE, &view[0][0]);
+
         // activate shader
         // render
 

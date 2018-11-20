@@ -65,3 +65,4 @@ void airplane::draw(int matloc){
         glBindVertexArray(this->getVao());
         glDrawArrays(GL_TRIANGLES, 0, this->getNumVertices());
 }
+
