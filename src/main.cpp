@@ -9,7 +9,8 @@
 
 
 using namespace irrklang;
-
+#define VERTEX_SHADER_FILE "shaders/test_vs.glsl"
+#define FRAGMENT_SHADER_FILE "shaders/test_fs.glsl"
 
 #define SKYBOX_VERTEX_SHADER_FILE "shaders/sky_vert.glsl"
 #define SKYBOX_FRAGMENT_SHADER_FILE "shaders/sky_frag.glsl"
