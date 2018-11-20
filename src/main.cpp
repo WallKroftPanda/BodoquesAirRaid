@@ -102,6 +102,7 @@ btRigidBody* bodySuelo;
 
 btRigidBody* bodyHurri;
 btRigidBody* bodyZep;
+btQuaternion bod;
 
 int main()
 {
@@ -180,7 +181,8 @@ int main()
     bodySuelo = crearCuerpoRigido(0.0f,1.0f,  0.0f, 0.0,0.0,0.0,0.0,1.0,50.0,1.0,50.0,dynamicsWorld);
     
     bodyZep =crearCuerpoRigido(-21.0f,10.0f,-50.0f,0.0f,0,0,0,1.0f,25.0,3.0,3.0,dynamicsWorld);
-    bodyHurri =crearCuerpoRigido(cam.x,cam.y-1.0f,cam.z-15.0f,0.5f,0.0f,1.0f,0.0f,1.0f,3.0,1.0,3.0,dynamicsWorld);
+    bodyHurri =crearCuerpoRigido(0.f,20.f,cam.z-15.0f,0.5f,0.0f,1.0f,0.0f,1.0f,3.0,1.0,3.0,dynamicsWorld);
+    bodyHurri->setLinearVelocity(btVector3(0.0f,0.f,-0.5f));
 
     // Setup style
     //ImGui::StyleColorsDark();//setea el estilo de la ventana , igual puede ser clara
@@ -342,6 +344,16 @@ int main()
 		debug->setProj(&projection);
 		dynamicsWorld->debugDrawWorld();
 		debug->drawLines();
+
+        if(bodyHurri->getCenterOfMassPosition().getY()<=75)
+        {
+            bodyHurri->applyForce(btVector3(0,5,0),btVector3(0,1,0));
+        }
+        bodyHurri->setAngularVelocity(bodyHurri->getAngularVelocity()*-1);
+        bod = bodyHurri->getOrientation();
+        btVector3 bpos = bodyHurri->getCenterOfMassPosition();
+        cameraPos = glm::vec3(bpos.getX(),bpos.getY()+1.f,bpos.getZ()+5.f);
+
         glfwSwapBuffers(g_window);
         glfwPollEvents();
     }
@@ -422,7 +434,7 @@ void Init(){
 	aletaT = new malla((char*)"mallas/aleta_trasera_vert.obj");
 	heli = new helice((char*)"mallas/hélice.obj");
 
-    projection = glm::perspective(glm::radians(fov), (float)g_gl_width / (float)g_gl_height, 0.1f, 10000.0f);
+    projection = glm::perspective(glm::radians(fov), (float)g_gl_width / (float)g_gl_height, 0.1f, 1000000.0f);
     view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
 
 	view_mat_location = glGetUniformLocation (shader_programme, "view");
@@ -456,22 +468,35 @@ void processInput(GLFWwindow *window)
         glfwSetWindowShouldClose(window, true);
 
     float cameraSpeed = 25 * deltaTime;
-    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+    /*if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
         cameraPos += cameraSpeed * cameraFront;
     if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
         cameraPos -= cameraSpeed * cameraFront;
     if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
         cameraPos -= glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
     if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-        cameraPos += glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
+        cameraPos += glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;*/
     if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
-        bodyHurri->applyCentralImpulse( btVector3( 0.f, 0.f, -1.0f));
+        bodyHurri->setAngularVelocity(btVector3(0.5f,0.f,0.f));
     if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
-        bodyHurri->applyCentralImpulse( btVector3( 0.f, 0.f, 1.0f));
+        bodyHurri->setAngularVelocity(btVector3(-0.5f,0.f,0.f));
     if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS)
-        bodyHurri->applyCentralImpulse( btVector3( -1.f, 0.f, 0.f));
+    {
+
+        bodyHurri->setAngularVelocity(btVector3(0.f,0.f,-0.5f));
+    }
     if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS)
-        bodyHurri->applyCentralImpulse( btVector3( 1.f, 0.f, 0.f));
+    {
+        bodyHurri->setAngularVelocity(btVector3(0.f,0.f,0.5f));
+    }
+    if(glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS)
+    {
+        if(bodyHurri->getLinearVelocity().getZ()<-0.5f)bodyHurri->applyCentralForce(btVector3(0.f,0.f,1.f));
+    }
+    if(glfwGetKey(window, GLFW_KEY_LEFT_ALT) == GLFW_PRESS)
+    {
+        bodyHurri->applyCentralForce(btVector3(0.f,0.f,-0.5f));
+    }
      
 }
 //Camara casi completamente migrada, esta función se me hace un problema, ya que se llama a esta función en INIT(), al quererla reemplazar dire3ctamente con la funcion camara->actualizar(), me daba error, por lo que decidí dejarla tal cual está, y llamar a "actualizar dentro de esta.
