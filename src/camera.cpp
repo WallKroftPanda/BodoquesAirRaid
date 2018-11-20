@@ -44,7 +44,7 @@ void camera::setView(){
 }
 
 void camera::setProjection(float fov){
-	this->projection = glm::perspective(glm::radians(fov), (float)gl_W / (float)gl_H, 0.1f, 100.0f);
+	this->projection = glm::perspective(glm::radians(fov), (float)gl_W / (float)gl_H, 0.1f, 10.0f);
 	glUniformMatrix4fv (proj_mat_location, 1, GL_FALSE, &projection[0][0]);
 }
 
