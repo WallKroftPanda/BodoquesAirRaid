@@ -261,13 +261,13 @@ int main()
 		
 		glUseProgram (skybox_shader);
 		glUniformMatrix4fv(view_skybox, 1, GL_FALSE, &view[0][0]);
-		
-		glUseProgram (shader_programme);
 
 		
-		
+		glUseProgram (shader_programme);
         view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
 	    glUniformMatrix4fv(view_mat_location, 1, GL_FALSE, &view[0][0]);
+	    
+	    
         // ------
        
 		//glUniformMatrix4fv(view_mat_location, 1, GL_FALSE, &view[0][0]);
