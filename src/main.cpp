@@ -154,7 +154,7 @@ int main()
 
     //crea un contexto ,usado por imgui , y setea el inicio de la libreria
       
-    /*const char* glsl_version = "#version 130";//version del shader usada para unir imgui con opengl3
+    const char* glsl_version = "#version 130";//version del shader usada para unir imgui con opengl3*/
     ImGui::CreateContext();
     ImGuiIO& io = ImGui::GetIO(); (void)io;
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;  // Enable Keyboard Controls
@@ -185,7 +185,7 @@ int main()
     bodyHurri->setLinearVelocity(btVector3(0.0f,0.f,-0.5f));
 
     // Setup style
-    //ImGui::StyleColorsDark();//setea el estilo de la ventana , igual puede ser clara
+    ImGui::StyleColorsDark();//setea el estilo de la ventana , igual puede ser clara
     
 	GLDebugDrawer* debug = new GLDebugDrawer();
 	debug->setDebugMode(btIDebugDraw::DBG_DrawWireframe );
@@ -237,10 +237,10 @@ int main()
             continue;
         }
         lastFrame = currentFrame;
-        /* inicializa los frames
+        /* inicializa los frames*/
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
-        ImGui::NewFrame();*/
+        ImGui::NewFrame();
 
         dynamicsWorld->stepSimulation(1.f / 60.f, 10);
 
@@ -333,13 +333,13 @@ int main()
         glBindVertexArray(e1->getVao());
         e1->draw(model_mat_location);
 
-        /*funcion donde se define lo que se dibuja de la GUI
+        /*funcion donde se define lo que se dibuja de la GUI*/
         GUILayout();
 
         //funcion propia de imgui 
         ImGui::Render();
         //hace lo que creen que hace
-        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());*/
+        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
         debug->setView(&view);
 		debug->setProj(&projection);
 		dynamicsWorld->debugDrawWorld();
@@ -352,16 +352,16 @@ int main()
         bodyHurri->setAngularVelocity(bodyHurri->getAngularVelocity()*-1);
         bod = bodyHurri->getOrientation();
         btVector3 bpos = bodyHurri->getCenterOfMassPosition();
-        cameraPos = glm::vec3(bpos.getX(),bpos.getY()+1.f,bpos.getZ()+5.f);
+        cameraPos = glm::vec3(bpos.getX(),bpos.getY()+1.f,bpos.getZ()+6.f);
 
         glfwSwapBuffers(g_window);
         glfwPollEvents();
     }
 
-    /*limpia todo
+    /*limpia todo*/
     ImGui_ImplOpenGL3_Shutdown();
     ImGui_ImplGlfw_Shutdown();
-    ImGui::DestroyContext();*/
+    ImGui::DestroyContext();
     glfwTerminate();
     return 0;
 }
@@ -451,7 +451,8 @@ void Init(){
 	{
 		printf("Could not startup engine\n");
 	}
-	//SoundEngine->play2D("src/juego.ogg", true);
+	SoundEngine->play2D("src/bgsound1.ogg", true);
+    SoundEngine->play2D("src/plane.ogg", true);
     printf("sadada");
 }
 
