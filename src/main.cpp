@@ -223,6 +223,26 @@ int main()
 	glTexParameteri( GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
 	glTexParameteri( GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
 
+	//Esto es para controlar front y visualizar vectores del avión
+	btQuaternion orientacion = bodyHurri->getOrientation();;
+	btVector3 axis;
+	btVector3 c;
+	c=bodyHurri->getCenterOfMassPosition();
+	axis = orientacion.getAxis();
+	//vbo y vao de la linea de orientacion
+	float linea[] ={c.getX(),c.getY(),c.getZ(),orientacion.getX(), orientacion.getY(), orientacion.getZ()};
+	GLuint vboL;
+	glGenBuffers( 1, &vboL );
+	glBindBuffer( GL_ARRAY_BUFFER, vboL );
+	glBufferData( GL_ARRAY_BUFFER, 6 * sizeof( GLfloat ), &linea, GL_STATIC_DRAW );
+	
+	GLuint vaoL;
+	glGenVertexArrays( 1, &vaoL );
+	glBindVertexArray( vaoL );
+	glEnableVertexAttribArray( 0 );
+	glBindBuffer( GL_ARRAY_BUFFER, vboL );
+	glVertexAttribPointer( 0, 3, GL_FLOAT, GL_FALSE, 0, NULL );
+	
     while (!glfwWindowShouldClose(g_window)){
     	
     	debug->setView(&view);
@@ -304,8 +324,24 @@ int main()
         aletasL->draw(model_mat_location);
         aletaT->draw(model_mat_location);
         heli->setModelMatrix(aux);
-        heli->setRotation(1,glm::vec3(1,0,0));
+        //heli->setRotation(2,glm::vec3(1,0,0));
         heli->draw(model_mat_location);
+        
+
+        
+        orientacion = bodyHurri->getOrientation();
+        axis = orientacion.getAxis();
+        printf("X: %f Y: %f Z: %f \n",orientacion.getX(), orientacion.getY(), orientacion.getZ());
+        
+        /*linea[0]=c.getX();
+        linea[1]=c.getY();
+        linea[2]=c.getZ();
+        linea[3]=axis.getX();
+        linea[4]=axis.getY();
+        linea[5]=axis.getZ();*/
+        //Se dibuja la linea de orientacion
+        glBindVertexArray( vaoL );
+		glDrawArrays( GL_LINES, 0, 6 );
         ///w///////////////////////
 
 	    //camara->setProjection(fov);
@@ -468,14 +504,14 @@ void processInput(GLFWwindow *window)
         glfwSetWindowShouldClose(window, true);
 
     float cameraSpeed = 25 * deltaTime;
-    /*if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
         cameraPos += cameraSpeed * cameraFront;
     if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
         cameraPos -= cameraSpeed * cameraFront;
     if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
         cameraPos -= glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
     if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-        cameraPos += glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;*/
+        cameraPos += glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
     if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
         bodyHurri->setAngularVelocity(btVector3(0.5f,0.f,0.f));
     if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
