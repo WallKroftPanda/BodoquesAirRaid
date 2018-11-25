@@ -102,7 +102,7 @@ btRigidBody* bodySuelo;
 
 btRigidBody* bodyHurri;
 btRigidBody* bodyZep;
-btQuaternion bod;
+btQuaternion bHQT;
 
 int main()
 {
@@ -386,7 +386,6 @@ int main()
             bodyHurri->applyForce(btVector3(0,5,0),btVector3(0,1,0));
         }
         bodyHurri->setAngularVelocity(bodyHurri->getAngularVelocity()*-1);
-        bod = bodyHurri->getOrientation();
         btVector3 bpos = bodyHurri->getCenterOfMassPosition();
         cameraPos = glm::vec3(bpos.getX(),bpos.getY()+1.f,bpos.getZ()+6.f);
 
@@ -481,7 +480,7 @@ void Init(){
 	glUniformMatrix4fv (proj_mat_location, 1, GL_FALSE, &projection[0][0]);
 
     model_mat_location=  glGetUniformLocation (shader_programme, "model");
-    
+    /*
 	SoundEngine = createIrrKlangDevice();
 	if (!SoundEngine)
 	{
@@ -489,6 +488,7 @@ void Init(){
 	}
 	SoundEngine->play2D("src/bgsound1.ogg", true);
     SoundEngine->play2D("src/plane.ogg", true);
+    */
     printf("sadada");
 }
 
@@ -513,12 +513,35 @@ void processInput(GLFWwindow *window)
     if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
         cameraPos += glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
     if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
-        bodyHurri->setAngularVelocity(btVector3(0.5f,0.f,0.f));
+    {
+        bHQT = bodyHurri->getOrientation();
+        bodyHurri->setAngularVelocity(btVector3(1.f*bHQT.getY(),
+        0.f,0.f));
+        
+        /*bodyHurri->setLinearVelocity(btVector3(
+            -3.f*bHQT.getX()*bHQT.getZ(),
+            -1.f*bHQT.getY(),
+            bodyHurri->getLinearVelocity().getZ()
+        ));*/
+        btVector3 bhP = bodyHurri->getCenterOfMassPosition();
+        std::cout<<bhP.getX()<<" "<<bhP.getY()<<" "<<bhP.getZ()<<std::endl;
+    }
+       
     if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
-        bodyHurri->setAngularVelocity(btVector3(-0.5f,0.f,0.f));
+    {
+        bHQT = bodyHurri->getOrientation();
+        bodyHurri->setAngularVelocity(btVector3(-1.f*bHQT.getY(),
+        0.f,0.f));
+        /*bodyHurri->setLinearVelocity(btVector3(
+            3.f*bHQT.getX()*bHQT.getZ(),
+            1.f*bHQT.getY(),
+            bodyHurri->getLinearVelocity().getZ()
+        ));*/
+        btVector3 bhP = bodyHurri->getCenterOfMassPosition();
+        std::cout<<bhP.getX()<<" "<<bhP.getY()<<" "<<bhP.getZ()<<std::endl;
+    }
     if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS)
     {
-
         bodyHurri->setAngularVelocity(btVector3(0.f,0.f,-0.5f));
     }
     if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS)
