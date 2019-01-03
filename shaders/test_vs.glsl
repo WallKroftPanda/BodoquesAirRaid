@@ -14,7 +14,10 @@ out vec3 normal;
 out vec2 st;
 
 void main() {
+	//st = texture_coord;
+	//normal = vertex_normal;
+	//light = (view * vec4(1.0f, 0.0f, 1.0f, 0.0f)).xyz;
 	st = texture_coord;
-	normal = vertex_normal;
+	normal = (view * model * vec4(vertex_normal, 0.0)).xyz;
 	gl_Position = proj * view * model * vec4 (vertex_position, 1.0);
 }

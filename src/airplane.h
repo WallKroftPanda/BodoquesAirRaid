@@ -18,9 +18,12 @@ class airplane/*: public malla*/{
         glm::vec3 scale;
         glm::mat4 T;
         glm::mat4 modelMatrix;
+    protected:
+        GLuint tex;
     public:
         airplane(char* filename);
         //getters
+        bool load_texture(const char* file_name);
         GLuint getVao();
         int getNumVertices();
         int getBullets();

@@ -331,7 +331,7 @@ int main()
         
         orientacion = bodyHurri->getOrientation();
         axis = orientacion.getAxis();
-        printf("X: %f Y: %f Z: %f \n",orientacion.getX(), orientacion.getY(), orientacion.getZ());
+   
         
         /*linea[0]=c.getX();
         linea[1]=c.getY();
@@ -393,7 +393,8 @@ int main()
         glfwPollEvents();
     }
 
-    /*limpia todo*/
+
+        /*limpia todo*/
     ImGui_ImplOpenGL3_Shutdown();
     ImGui_ImplGlfw_Shutdown();
     ImGui::DestroyContext();
@@ -438,9 +439,9 @@ void Init(){
 	//Funciones propias de GL
 	glEnable (GL_DEPTH_TEST);
 	glDepthFunc ( GL_LESS);
-	glEnable (GL_CULL_FACE);
+	/*lEnable (GL_CULL_FACE);
 	glCullFace (GL_BACK);
-	glFrontFace (GL_CCW);
+	glFrontFace (GL_CCW);*/
 	glClearColor (0.2, 0.2, 0.2, 1.0);
 	glViewport (0, 0, g_gl_width, g_gl_height);
 	
@@ -459,6 +460,7 @@ void Init(){
 	VERTEX_SHADER_FILE, FRAGMENT_SHADER_FILE);
     
     bodoque = new airplane((char*)"mallas/Hurricane.obj");
+    bodoque->load_texture("textures/me.jpg");
     e1 = new zeppelin((char*)"mallas/dirigible.obj");
    	elsuelo = new suelo((char*)"mallas/sueloRef.obj");
     ElMono = new malla((char*)"mallas/suzanne.obj");
@@ -480,7 +482,7 @@ void Init(){
 	glUniformMatrix4fv (proj_mat_location, 1, GL_FALSE, &projection[0][0]);
 
     model_mat_location=  glGetUniformLocation (shader_programme, "model");
-    /*
+    
 	SoundEngine = createIrrKlangDevice();
 	if (!SoundEngine)
 	{
@@ -488,7 +490,7 @@ void Init(){
 	}
 	SoundEngine->play2D("src/bgsound1.ogg", true);
     SoundEngine->play2D("src/plane.ogg", true);
-    */
+    
     printf("sadada");
 }
 
