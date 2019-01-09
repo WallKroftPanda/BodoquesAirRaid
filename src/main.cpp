@@ -6,11 +6,8 @@
 #include "irrKlang.h"
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
-
-
 using namespace irrklang;
-#define VERTEX_SHADER_FILE "shaders/test_vs.glsl"
-#define FRAGMENT_SHADER_FILE "shaders/test_fs.glsl"
+
 
 #define SKYBOX_VERTEX_SHADER_FILE "shaders/sky_vert.glsl"
 #define SKYBOX_FRAGMENT_SHADER_FILE "shaders/sky_frag.glsl"
@@ -79,10 +76,12 @@ int model_mat_location;
 airplane *bodoque;
 zeppelin *e1;
 //sky skycube;
-suelo *elsuelo;
+//suelo *elsuelo;
 malla *ElMono;
 malla *pickUp;
 malla *ball;
+
+malla *menu;
 
 malla *aletasT;
 malla *aletasL;
@@ -98,7 +97,7 @@ int proj_mat_location;
 
 btTransform ballTransform;
 btRigidBody* bodyBall;
-btRigidBody* bodySuelo;
+//btRigidBody* bodySuelo;
 
 btRigidBody* bodyHurri;
 btRigidBody* bodyZep;
@@ -168,7 +167,7 @@ int main()
     //btRigidBody* crearCuerpoRigido(float posX,float posY,float posZ,float masa,float alfa, float dirX,float dirY,float dirZ, btDiscreteDynamicsWorld* mundoFisico){
 
     bodyBall = crearCuerpoRigido( 0.0 , 10.0, -10.0, 5.0,0.0,1.0,0.0,0.0,1.0,1.0,1.0,dynamicsWorld);
-    bodySuelo = crearCuerpoRigido(0.0f,-100.0f,  0.0f, 0.0,0.0,0.0,0.0,1.0,50.0,1.0,50.0,dynamicsWorld);
+    //bodySuelo = crearCuerpoRigido(0.0f,-100.0f,  0.0f, 0.0,0.0,0.0,0.0,1.0,50.0,1.0,50.0,dynamicsWorld);
     
     bodyZep =crearCuerpoRigido(-21.0f,10.0f,-50.0f,0.0f,0,0,0,1.0f,25.0,3.0,3.0,dynamicsWorld);
     bodyHurri =crearCuerpoRigido(0.f,20.f,15.0f,0.5f,0.0f,1.0f,0.0f,1.0f,3.0,1.0,3.0,dynamicsWorld);
@@ -256,6 +255,7 @@ int main()
 
             processInput(g_window);
         if(inGame){
+
         }
         glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -272,6 +272,9 @@ int main()
 		glUseProgram (skybox_shader);
 		glUniformMatrix4fv(view_skybox, 1, GL_FALSE, &view[0][0]);
 
+        /*
+            --date=relative
+        */
 		
 		glUseProgram (shader_programme);
         view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
@@ -295,13 +298,19 @@ int main()
         trans.getOpenGLMatrix(&aux[0][0]);
         ball->setModelMatrix(aux);
         ball->draw(model_mat_location);
+
+        bodyZep->getMotionState()->getWorldTransform(trans);
+        trans.getOpenGLMatrix(&aux[0][0]);
+        e1->setModelMatrix(aux);
+        e1->draw(model_mat_location);
 		
 		//mapa
-        bodySuelo->getMotionState()->getWorldTransform(trans);
-        trans.getOpenGLMatrix(&aux[0][0]);
-        elsuelo->setModelMatrix(aux);
-        elsuelo->draw(model_mat_location);
-        
+        //bodySuelo->getMotionState()->getWorldTransform(trans);
+        //trans.getOpenGLMatrix(&aux[0][0]);
+        //elsuelo->setModelMatrix(aux);
+        //elsuelo->draw(model_mat_location);
+        menu->draw(model_mat_location);
+        menu->setPos(glm::vec3(10.0f,15.0f,-25.0f));
         //Hurricane
         bodyHurri->getMotionState()->getWorldTransform(trans);
         trans.getOpenGLMatrix(&aux[0][0]);
@@ -340,21 +349,18 @@ int main()
         //Dibujar suelo
         
         //Dibujar zeppelin
-        bodyZep->getMotionState()->getWorldTransform(trans);
-        trans.getOpenGLMatrix(&aux[0][0]);
-        e1->setModelMatrix(aux);
-        e1->draw(model_mat_location);
+        
 
         // DIBUJAR CAJA DE MUNICION
-        pickUp->setpos(glm::vec3(-10.0f,15.0f,-25.0f));
+        pickUp->setPos(glm::vec3(-10.0f,15.0f,-25.0f));
         // glBindVertexArray(pickUp->getvao());
         // glDrawArrays(GL_TRIANGLES,0,pickUp->getnumvertices());
-        pickUp->setModelMatrix(aux);
+        //pickUp->setModelMatrix(aux);
         pickUp->draw(model_mat_location);
         //Dibujar ElMono
-        ElMono->setpos(glm::vec3(-30.0f,2.0f,5.0f));
-        glBindVertexArray(ElMono->getvao());
-        glDrawArrays(GL_TRIANGLES,0,ElMono->getnumvertices());
+        ElMono->setPos(glm::vec3(-30.0f,2.0f,5.0f));
+        glBindVertexArray(ElMono->getVao());
+        glDrawArrays(GL_TRIANGLES,0,ElMono->getNumVertices());
 
 		/*e1->setPosition(glm::vec3(4.0f,-1.0f,0.0f));
         glBindVertexArray(e1->getVao());
@@ -379,7 +385,7 @@ int main()
         bodyHurri->setAngularVelocity(bodyHurri->getAngularVelocity()*-1);
         btVector3 bpos = bodyHurri->getCenterOfMassPosition();
         cameraPos = glm::vec3(bpos.getX(),bpos.getY()+1.f,bpos.getZ()+6.f);
-
+        
         glfwSwapBuffers(g_window);
         glfwPollEvents();
     }
@@ -467,15 +473,16 @@ void Init(){
     bodoque->load_surface("textures/earth4k.jpg");
     bodoque->load_specular("textures/earth-specular-1k.jpg");
     e1 = new zeppelin((char*)"mallas/dirigible.obj");
-   	elsuelo = new suelo((char*)"mallas/sueloRef.obj");
-    ElMono = new malla((char*)"mallas/suzanne.obj");
-    pickUp = new malla((char*) "mallas/caja.obj");
-    ball = new malla((char*)"mallas/ball.obj");
-	aletasT = new malla((char*)"mallas/aletas_traseras.obj");
-	aletasL = new malla((char*)"mallas/aletas_laterales.obj");
-	aletaT = new malla((char*)"mallas/aleta_trasera_vert.obj");
+   	//elsuelo = new suelo((char*)"mallas/sueloRef.obj");
+    ElMono = new malla((char*)"mallas/suzanne.obj",shader_programme);
+    pickUp = new malla((char*) "mallas/caja.obj",shader_programme);
+    ball = new malla((char*)"mallas/ball.obj",shader_programme);
+	aletasT = new malla((char*)"mallas/aletas_traseras.obj",shader_programme);
+	aletasL = new malla((char*)"mallas/aletas_laterales.obj",shader_programme);
+	aletaT = new malla((char*)"mallas/aleta_trasera_vert.obj",shader_programme);
 	heli = new helice((char*)"mallas/hélice.obj");
-
+    menu = new malla((char*)"mallas/menu_principal.obj",shader_programme);
+    menu->load_surface("textures/fondoxd.png");
 	SoundEngine = createIrrKlangDevice();
 	if (!SoundEngine)
 	{
