@@ -20,10 +20,11 @@ class airplane/*: public malla*/{
         glm::mat4 modelMatrix;
     protected:
         GLuint tex;
+        GLuint stex;
     public:
         airplane(char* filename);
         //getters
-        bool load_texture(const char* file_name);
+        bool load_texture (const char* file_name, GLuint *tex, GLenum texslot);
         GLuint getVao();
         int getNumVertices();
         int getBullets();
@@ -51,6 +52,7 @@ class airplane/*: public malla*/{
         void girar_DER();//movimiento de palas para girar a la derecha
         void inc_VEL(); //Incrementar velocidad
         void dis_VEL(); //Reducir velocidad
-        
+        bool load_specular(const char *filename,GLuint shader_program);
+        bool load_surface(const char *filename,GLuint shader_program);
 };
 #endif

@@ -71,7 +71,7 @@ void airplane::draw(int matloc){
         glDrawArrays(GL_TRIANGLES, 0, this->getNumVertices());
 }
 
-bool airplane::load_texture (const char* file_name) {
+bool airplane::load_texture (const char* file_name, GLuint *tex, GLenum texslot) {
 	int x, y, n;
 	int force_channels = 4;
 	unsigned char* image_data = stbi_load (file_name, &x, &y, &n, force_channels);
@@ -103,14 +103,14 @@ bool airplane::load_texture (const char* file_name) {
 			bottom++;
 		}
 	}
-	glGenTextures (1, &tex);
-	glActiveTexture (GL_TEXTURE0);
-	glBindTexture (GL_TEXTURE_2D, tex);
+	glGenTextures (1, tex);
+	glActiveTexture(texslot);
+	glBindTexture (GL_TEXTURE_2D, *tex);
 	glTexImage2D ( GL_TEXTURE_2D, 0, GL_RGBA, x, y, 0, GL_RGBA, GL_UNSIGNED_BYTE, image_data);
 	glGenerateMipmap (GL_TEXTURE_2D);
     // probar cambiar GL_CLAMP_TO_EDGE por GL_REPEAT
-	glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 	glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 	GLfloat max_aniso = 16.0f;
@@ -120,3 +120,19 @@ bool airplane::load_texture (const char* file_name) {
 	return true;
 }
 
+bool airplane::load_surface(const char *filename,GLuint shader_program){
+    this->load_texture(filename, &this->tex, GL_TEXTURE0);
+    // load texture
+    int tex_location = glGetUniformLocation( shader_program, "rgb_sampler" );
+    //assert( tex_location > -1 );
+    glUniform1i( tex_location, 0 );
+    return true;
+}
+
+bool airplane::load_specular(const char *filename,GLuint shader_program){
+    this->load_texture(filename, &this->stex, GL_TEXTURE1);
+    int tex_location = glGetUniformLocation( shader_program, "spec_sampler" );
+    //assert( tex_location > -1 );
+    glUniform1i( tex_location, 1 );
+    return true;
+}

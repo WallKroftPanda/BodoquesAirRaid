@@ -140,18 +140,8 @@ int main()
 	glBindBuffer( GL_ARRAY_BUFFER, vbosky );
 	glVertexAttribPointer( 0, 3, GL_FLOAT, GL_FALSE, 0, NULL );
 
-    camara= new camera(glm::vec3(0.0f, 10.0f, 0.0f), glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f, 1.0f, 0.0f),g_gl_width,g_gl_height);
     
-    camara->setProjection(fov);
-    
-    camara->setView();
-
-	camara->setViewMatLocation(shader_programme);
-	
-	camara->setProjMatLocation(shader_programme);
     int model_mat_location = glGetUniformLocation(shader_programme, "model");
-	glm::vec3 cam=camara->getCameraPos();
-
     //crea un contexto ,usado por imgui , y setea el inicio de la libreria
       
     const char* glsl_version = "#version 130";//version del shader usada para unir imgui con opengl3*/
@@ -181,7 +171,7 @@ int main()
     bodySuelo = crearCuerpoRigido(0.0f,1.0f,  0.0f, 0.0,0.0,0.0,0.0,1.0,50.0,1.0,50.0,dynamicsWorld);
     
     bodyZep =crearCuerpoRigido(-21.0f,10.0f,-50.0f,0.0f,0,0,0,1.0f,25.0,3.0,3.0,dynamicsWorld);
-    bodyHurri =crearCuerpoRigido(0.f,20.f,cam.z-15.0f,0.5f,0.0f,1.0f,0.0f,1.0f,3.0,1.0,3.0,dynamicsWorld);
+    bodyHurri =crearCuerpoRigido(0.f,20.f,15.0f,0.5f,0.0f,1.0f,0.0f,1.0f,3.0,1.0,3.0,dynamicsWorld);
     bodyHurri->setLinearVelocity(btVector3(0.0f,0.f,-0.5f));
 
     // Setup style
@@ -460,7 +450,8 @@ void Init(){
 	VERTEX_SHADER_FILE, FRAGMENT_SHADER_FILE);
     
     bodoque = new airplane((char*)"mallas/Hurricane.obj");
-    bodoque->load_texture("textures/me.jpg");
+    bodoque->load_surface("textures/earth4k.jpg",shader_programme);
+    bodoque->load_specular("textures/earth-specular-1k.jpg",shader_programme);
     e1 = new zeppelin((char*)"mallas/dirigible.obj");
    	elsuelo = new suelo((char*)"mallas/sueloRef.obj");
     ElMono = new malla((char*)"mallas/suzanne.obj");
