@@ -117,23 +117,23 @@ btQuaternion bHQT;
 int main()
 {
     float points[] = {
-		-500.0f, 500.0f,	-500.0f, -500.0f, -500.0f, -500.0f, 500.0f,	-500.0f, -500.0f,
-		500.0f,	-500.0f, -500.0f, 500.0f,	500.0f,	-500.0f, -500.0f, 500.0f,	-500.0f,
+		-1500.0f, 1500.0f,	-1500.0f, -1500.0f, -1500.0f, -1500.0f, 1500.0f,	-1500.0f, -1500.0f,
+		1500.0f,	-1500.0f, -1500.0f, 1500.0f,	1500.0f,	-1500.0f, -1500.0f, 1500.0f,	-1500.0f,
 
-		-500.0f, -500.0f, 500.0f,	-500.0f, -500.0f, -500.0f, -500.0f, 500.0f,	-500.0f,
-		-500.0f, 500.0f,	-500.0f, -500.0f, 500.0f,	500.0f,	-500.0f, -500.0f, 500.0f,
+		-1500.0f, -1500.0f, 1500.0f,	-1500.0f, -1500.0f, -1500.0f, -1500.0f, 1500.0f,	-1500.0f,
+		-1500.0f, 1500.0f,	-1500.0f, -1500.0f, 1500.0f,	1500.0f,	-1500.0f, -1500.0f, 1500.0f,
 
-		500.0f,	-500.0f, -500.0f, 500.0f,	-500.0f, 500.0f,	500.0f,	500.0f,	500.0f,
-		500.0f,	500.0f,	500.0f,	500.0f,	500.0f,	-500.0f, 500.0f,	-500.0f, -500.0f,
+		1500.0f,	-1500.0f, -1500.0f, 1500.0f,	-1500.0f, 1500.0f,	1500.0f,	1500.0f,	1500.0f,
+		1500.0f,	1500.0f,	1500.0f,	1500.0f,	1500.0f,	-1500.0f, 1500.0f,	-1500.0f, -1500.0f,
 
-		-500.0f, -500.0f, 500.0f,	-500.0f, 500.0f,	500.0f,	500.0f,	500.0f,	500.0f,
-		500.0f,	500.0f,	500.0f,	500.0f,	-500.0f, 500.0f,	-500.0f, -500.0f, 500.0f,
+		-1500.0f, -1500.0f, 1500.0f,	-1500.0f, 1500.0f,	1500.0f,	1500.0f,	1500.0f,	1500.0f,
+		1500.0f,	1500.0f,	1500.0f,	1500.0f,	-1500.0f, 1500.0f,	-1500.0f, -1500.0f, 1500.0f,
 
-		-500.0f, 500.0f,	-500.0f, 500.0f,	500.0f,	-500.0f, 500.0f,	500.0f,	500.0f,
-		500.0f,	500.0f,	500.0f,	-500.0f, 500.0f,	500.0f,	-500.0f, 500.0f,	-500.0f,
+		-1500.0f, 1500.0f,	-1500.0f, 1500.0f,	1500.0f,	-1500.0f, 1500.0f,	1500.0f,	1500.0f,
+		1500.0f,	1500.0f,	1500.0f,	-1500.0f, 1500.0f,	1500.0f,	-1500.0f, 1500.0f,	-1500.0f,
 
-		-500.0f, -500.0f, -500.0f, -500.0f, -500.0f, 500.0f,	500.0f,	-500.0f, -500.0f,
-		500.0f,	-500.0f, -500.0f, -500.0f, -500.0f, 500.0f,	500.0f,	-500.0f, 500.0f
+		-1500.0f, -1500.0f, -1500.0f, -1500.0f, -1500.0f, 1500.0f,	1500.0f,	-1500.0f, -1500.0f,
+		1500.0f,	-1500.0f, -1500.0f, -1500.0f, -1500.0f, 1500.0f,	1500.0f,	-1500.0f, 1500.0f
 	};
 
     Init();
@@ -150,18 +150,8 @@ int main()
 	glBindBuffer( GL_ARRAY_BUFFER, vbosky );
 	glVertexAttribPointer( 0, 3, GL_FLOAT, GL_FALSE, 0, NULL );
 
-    camara= new camera(glm::vec3(0.0f, 10.0f, 0.0f), glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f, 1.0f, 0.0f),g_gl_width,g_gl_height);
     
-    camara->setProjection(fov);
-    
-    camara->setView();
-
-	camara->setViewMatLocation(shader_programme);
-	
-	camara->setProjMatLocation(shader_programme);
     int model_mat_location = glGetUniformLocation(shader_programme, "model");
-	glm::vec3 cam=camara->getCameraPos();
-
     //crea un contexto ,usado por imgui , y setea el inicio de la libreria
       
     const char* glsl_version = "#version 130";//version del shader usada para unir imgui con opengl3*/
@@ -189,10 +179,9 @@ int main()
 
     bodyBall = crearCuerpoRigido( 0.0 , 10.0, -10.0, 5.0,0.0,1.0,0.0,0.0,1.0,1.0,1.0,dynamicsWorld);
     bodySuelo = crearCuerpoRigido(0.0f,1.0f,  0.0f, 0.0,0.0,0.0,0.0,1.0,50.0,1.0,50.0,dynamicsWorld);
-    bodyCaja = crearCuerpoRigido(0.f,22.f,cam.z-15.0f,0.f,0.0f,1.0f,0.0f,1.0f,0.4f,1.f,0.4f,dynamicsWorld);
     
     bodyZep =crearCuerpoRigido(-21.0f,10.0f,-50.0f,0.0f,0,0,0,1.0f,25.0,3.0,3.0,dynamicsWorld);
-    bodyHurri =crearCuerpoRigido(0.f,20.f,cam.z-15.0f,0.5f,0.0f,1.0f,0.0f,1.0f,3.0,1.0,3.0,dynamicsWorld);
+    bodyHurri =crearCuerpoRigido(0.f,20.f,15.0f,0.5f,0.0f,1.0f,0.0f,1.0f,3.0,1.0,3.0,dynamicsWorld);
     
 //    btRigidBody* crearCuerpoRigido(float posX,float posY,float posZ,float masa,float alfa, float dirX,float dirY,float dirZ, float colX, float colY, float colZ, btDiscreteDynamicsWorld* mundoFisico);
 
@@ -237,7 +226,6 @@ int main()
 
 	//Esto es para controlar front y visualizar vectores del avión
 	btVector3 f = bodyHurri->getCenterOfMassPosition();
-	btVector3 c = bodyCaja->getCenterOfMassPosition();
 	btQuaternion bFront = bodyHurri->getOrientation();
 	btVector3 prueba =btVector3(f.getX(),f.getY()+1.f,f.getZ());
 	//glm::vec4 temp = glm::vec4(f.getX(),f.getY()+1.f,f.getZ(),0.f);
@@ -354,8 +342,6 @@ int main()
         bFront=bodyHurri->getOrientation();
         f = bodyHurri->getCenterOfMassPosition();
         
-        c = bodyCaja->getCenterOfMassPosition();
-        
         
         printf("X: %f Y: %f Z: %f --- X: %f Y: %f Z: %f \n", f.getX(), f.getY(), f.getZ(), prueba.getX(), prueba.getY(), prueba.getZ());
         
@@ -384,9 +370,10 @@ int main()
 
         // DIBUJAR CAJA DE MUNICION
         pickUp->setpos(glm::vec3(-10.0f,15.0f,-25.0f));
-        glBindVertexArray(pickUp->getvao());
-        glDrawArrays(GL_TRIANGLES,0,pickUp->getnumvertices());
-
+        // glBindVertexArray(pickUp->getvao());
+        // glDrawArrays(GL_TRIANGLES,0,pickUp->getnumvertices());
+        pickUp->setModelMatrix(aux);
+        pickUp->draw(model_mat_location);
         //Dibujar ElMono
         ElMono->setpos(glm::vec3(-30.0f,2.0f,5.0f));
         glBindVertexArray(ElMono->getvao());
@@ -420,7 +407,8 @@ int main()
         glfwPollEvents();
     }
 
-    /*limpia todo*/
+
+        /*limpia todo*/
     ImGui_ImplOpenGL3_Shutdown();
     ImGui_ImplGlfw_Shutdown();
     ImGui::DestroyContext();
@@ -465,9 +453,9 @@ void Init(){
 	//Funciones propias de GL
 	glEnable (GL_DEPTH_TEST);
 	glDepthFunc ( GL_LESS);
-	glEnable (GL_CULL_FACE);
+	/*lEnable (GL_CULL_FACE);
 	glCullFace (GL_BACK);
-	glFrontFace (GL_CCW);
+	glFrontFace (GL_CCW);*/
 	glClearColor (0.2, 0.2, 0.2, 1.0);
 	glViewport (0, 0, g_gl_width, g_gl_height);
 	
@@ -485,18 +473,6 @@ void Init(){
 	shader_programme = create_programme_from_files (
 	VERTEX_SHADER_FILE, FRAGMENT_SHADER_FILE);
     
-    bodoque = new airplane((char*)"mallas/Hurricane.obj");
-    e1 = new zeppelin((char*)"mallas/dirigible.obj");
-   	elsuelo = new suelo((char*)"mallas/sueloRef.obj");
-    ElMono = new malla((char*)"mallas/suzanne.obj");
-    pickUp = new malla((char*) "mallas/caja.obj");
-    ball = new malla((char*)"mallas/ball.obj");
-	aletasT = new malla((char*)"mallas/aletas_traseras.obj");
-	aletasL = new malla((char*)"mallas/aletas_laterales.obj");
-	aletaT = new malla((char*)"mallas/aleta_trasera_vert.obj");
-	heli = new helice((char*)"mallas/hélice.obj");
-	caja = new malla((char*)"mallas/cajita.obj");
-
     projection = glm::perspective(glm::radians(fov), (float)g_gl_width / (float)g_gl_height, 0.1f, 1000000.0f);
     view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
 
@@ -508,7 +484,20 @@ void Init(){
 	glUniformMatrix4fv (proj_mat_location, 1, GL_FALSE, &projection[0][0]);
 
     model_mat_location=  glGetUniformLocation (shader_programme, "model");
-    /*
+    
+    bodoque = new airplane((char*)"mallas/Hurricane.obj",shader_programme);
+    bodoque->load_surface("textures/earth4k.jpg");
+    bodoque->load_specular("textures/earth-specular-1k.jpg");
+    e1 = new zeppelin((char*)"mallas/dirigible.obj");
+   	elsuelo = new suelo((char*)"mallas/sueloRef.obj");
+    ElMono = new malla((char*)"mallas/suzanne.obj");
+    pickUp = new malla((char*) "mallas/caja.obj");
+    ball = new malla((char*)"mallas/ball.obj");
+	aletasT = new malla((char*)"mallas/aletas_traseras.obj");
+	aletasL = new malla((char*)"mallas/aletas_laterales.obj");
+	aletaT = new malla((char*)"mallas/aleta_trasera_vert.obj");
+	heli = new helice((char*)"mallas/hélice.obj");
+
 	SoundEngine = createIrrKlangDevice();
 	if (!SoundEngine)
 	{
@@ -516,7 +505,7 @@ void Init(){
 	}
 	SoundEngine->play2D("src/bgsound1.ogg", true);
     SoundEngine->play2D("src/plane.ogg", true);
-    */
+    
     printf("sadada");
 }
 
