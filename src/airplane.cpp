@@ -12,9 +12,11 @@
 #include "stb_image.h"
 using namespace std;
 
-airplane::airplane(char* filename){
+airplane::airplane(char* filename,GLuint shader_programme){
     this->filename = filename;
     this->position = glm::vec3(0,0,0);
+	this->shader_programme = shader_programme;
+	this->matloc = glGetUniformLocation (this->shader_programme, "model");
     this->angle = 0.0f;
     this->life = 100.0f;
     assert(load_mesh(filename,&vao,&numVertices));
@@ -66,7 +68,7 @@ void airplane::draw(int matloc){
 		glActiveTexture(GL_TEXTURE0);
     	glBindVertexArray(getVao());
     	glBindTexture(GL_TEXTURE_2D, tex);
-	    glUniformMatrix4fv(matloc, 1, GL_FALSE, &this->modelMatrix[0][0]);
+	    glUniformMatrix4fv(this->matloc, 1, GL_FALSE, &this->modelMatrix[0][0]);
         glBindVertexArray(this->getVao());
         glDrawArrays(GL_TRIANGLES, 0, this->getNumVertices());
 }
@@ -120,18 +122,18 @@ bool airplane::load_texture (const char* file_name, GLuint *tex, GLenum texslot)
 	return true;
 }
 
-bool airplane::load_surface(const char *filename,GLuint shader_program){
+bool airplane::load_surface(const char *filename){
     this->load_texture(filename, &this->tex, GL_TEXTURE0);
     // load texture
-    int tex_location = glGetUniformLocation( shader_program, "rgb_sampler" );
+    int tex_location = glGetUniformLocation( this->shader_programme, "rgb_sampler" );
     //assert( tex_location > -1 );
     glUniform1i( tex_location, 0 );
     return true;
 }
 
-bool airplane::load_specular(const char *filename,GLuint shader_program){
+bool airplane::load_specular(const char *filename){
     this->load_texture(filename, &this->stex, GL_TEXTURE1);
-    int tex_location = glGetUniformLocation( shader_program, "spec_sampler" );
+    int tex_location = glGetUniformLocation(this-> shader_programme, "spec_sampler" );
     //assert( tex_location > -1 );
     glUniform1i( tex_location, 1 );
     return true;
