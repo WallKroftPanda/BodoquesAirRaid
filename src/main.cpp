@@ -80,6 +80,7 @@ zeppelin *e1;
 malla *ElMono;
 malla *pickUp;
 malla *ball;
+malla *caja;
 
 malla *menu;
 
@@ -87,6 +88,14 @@ malla *aletasT;
 malla *aletasL;
 malla *aletaT;
 helice *heli;
+btVector3 f;
+
+bool firstBodoque;
+float bPitch;
+float bYaw;
+float bRoll;
+float bLastX;
+float bLastY;
 
 glm::mat4 projection;
 glm::mat4 view;
@@ -97,8 +106,8 @@ int proj_mat_location;
 
 btTransform ballTransform;
 btRigidBody* bodyBall;
-//btRigidBody* bodySuelo;
-
+btRigidBody* bodySuelo;
+btRigidBody* bodyCaja;
 btRigidBody* bodyHurri;
 btRigidBody* bodyZep;
 btQuaternion bHQT;
@@ -167,11 +176,12 @@ int main()
     //btRigidBody* crearCuerpoRigido(float posX,float posY,float posZ,float masa,float alfa, float dirX,float dirY,float dirZ, btDiscreteDynamicsWorld* mundoFisico){
 
     bodyBall = crearCuerpoRigido( 0.0 , 10.0, -10.0, 5.0,0.0,1.0,0.0,0.0,1.0,1.0,1.0,dynamicsWorld);
-    //bodySuelo = crearCuerpoRigido(0.0f,-100.0f,  0.0f, 0.0,0.0,0.0,0.0,1.0,50.0,1.0,50.0,dynamicsWorld);
+    bodySuelo = crearCuerpoRigido(0.0f,1.0f,  0.0f, 0.0,0.0,0.0,0.0,1.0,50.0,1.0,50.0,dynamicsWorld);
     
     bodyZep =crearCuerpoRigido(-21.0f,10.0f,-50.0f,0.0f,0,0,0,1.0f,25.0,3.0,3.0,dynamicsWorld);
     bodyHurri =crearCuerpoRigido(0.f,20.f,15.0f,0.5f,0.0f,1.0f,0.0f,1.0f,3.0,1.0,3.0,dynamicsWorld);
-    bodyHurri->setLinearVelocity(btVector3(0.0f,0.f,-0.5f));
+    
+//    btRigidBody* crearCuerpoRigido(float posX,float posY,float posZ,float masa,float alfa, float dirX,float dirY,float dirZ, float colX, float colY, float colZ, btDiscreteDynamicsWorld* mundoFisico);
 
     // Setup style
     ImGui::StyleColorsDark();//setea el estilo de la ventana , igual puede ser clara
@@ -183,7 +193,7 @@ int main()
 	dynamicsWorld->setDebugDrawer(debug);
 	
     glm::mat4 aux;
-
+	glm::mat4 modelMatrixUp;
 
     GLuint skybox_shader = create_programme_from_files ( SKYBOX_VERTEX_SHADER_FILE, SKYBOX_FRAGMENT_SHADER_FILE);
 	glUseProgram (skybox_shader);
@@ -213,23 +223,25 @@ int main()
 	glTexParameteri( GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
 
 	//Esto es para controlar front y visualizar vectores del avión
-	btQuaternion orientacion = bodyHurri->getOrientation();;
-	btVector3 axis;
-	btVector3 c;
-	c=bodyHurri->getCenterOfMassPosition();
-	axis = orientacion.getAxis();
-	//vbo y vao de la linea de orientacion
-	float linea[] ={c.getX(),c.getY(),c.getZ(),orientacion.getX(), orientacion.getY(), orientacion.getZ()};
-	GLuint vboL;
-	glGenBuffers( 1, &vboL );
-	glBindBuffer( GL_ARRAY_BUFFER, vboL );
-	glBufferData( GL_ARRAY_BUFFER, 6 * sizeof( GLfloat ), &linea, GL_STATIC_DRAW );
+	btVector3 f = bodyHurri->getCenterOfMassPosition();
+	btQuaternion bFront = bodyHurri->getOrientation();
+	btVector3 prueba =btVector3(f.getX(),f.getY()+1.f,f.getZ());
+	//glm::vec4 temp = glm::vec4(f.getX(),f.getY()+1.f,f.getZ(),0.f);
+	btTransform rot;
+	btMotionState *auxMS;
 	
-	GLuint vaoL;
-	glGenVertexArrays( 1, &vaoL );
-	glBindVertexArray( vaoL );
+	float linea[] = {f.getX(), f.getY(), f.getZ(),prueba.getX(), prueba.getY(), prueba.getZ()};
+	
+	GLuint vboLin;
+	glGenBuffers( 1, &vboLin );
+	glBindBuffer( GL_ARRAY_BUFFER, vboLin );
+	glBufferData( GL_ARRAY_BUFFER, 3 * 6 * sizeof( GLfloat ), &linea,GL_STATIC_DRAW );
+	
+	GLuint vaoLin;
+	glGenVertexArrays( 1, &vaoLin );
+	glBindVertexArray( vaoLin );
 	glEnableVertexAttribArray( 0 );
-	glBindBuffer( GL_ARRAY_BUFFER, vboL );
+	glBindBuffer( GL_ARRAY_BUFFER, vboLin );
 	glVertexAttribPointer( 0, 3, GL_FLOAT, GL_FALSE, 0, NULL );
 	
     while (!glfwWindowShouldClose(g_window)){
@@ -313,7 +325,10 @@ int main()
         menu->setPos(glm::vec3(10.0f,15.0f,-25.0f));
         //Hurricane
         bodyHurri->getMotionState()->getWorldTransform(trans);
+        //trans.setRotation(bFront);
         trans.getOpenGLMatrix(&aux[0][0]);
+        
+        
         bodoque->setModelMatrix(aux);
         bodoque->draw(model_mat_location);
         aletasT->setModelMatrix(aux);
@@ -326,12 +341,21 @@ int main()
         //heli->setRotation(2,glm::vec3(1,0,0));
         heli->draw(model_mat_location);
         
-
+        prueba = trans*prueba.normalize();
+        /*temp = aux*temp;
+        prueba.x = temp.x;
+        prueba.y = temp.y;
+        prueba.z = temp.z;*/
         
-        orientacion = bodyHurri->getOrientation();
-        axis = orientacion.getAxis();
-   
+        bFront=bodyHurri->getOrientation();
+        f = bodyHurri->getCenterOfMassPosition();
         
+        
+        printf("X: %f Y: %f Z: %f --- X: %f Y: %f Z: %f \n", f.getX(), f.getY(), f.getZ(), prueba.getX(), prueba.getY(), prueba.getZ());
+        
+        glBindVertexArray( vaoLin );
+		glDrawArrays( GL_LINES, 0, 2 );
+		
         /*linea[0]=c.getX();
         linea[1]=c.getY();
         linea[2]=c.getZ();
@@ -339,8 +363,6 @@ int main()
         linea[4]=axis.getY();
         linea[5]=axis.getZ();*/
         //Se dibuja la linea de orientacion
-        glBindVertexArray( vaoL );
-		glDrawArrays( GL_LINES, 0, 6 );
         ///w///////////////////////
 
 	    //camara->setProjection(fov);
@@ -456,7 +478,6 @@ void Init(){
 	shader_programme = create_programme_from_files (
 	VERTEX_SHADER_FILE, FRAGMENT_SHADER_FILE);
     
-    
     projection = glm::perspective(glm::radians(fov), (float)g_gl_width / (float)g_gl_height, 0.1f, 1000000.0f);
     view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
 
@@ -514,41 +535,24 @@ void processInput(GLFWwindow *window)
         cameraPos -= glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
     if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
         cameraPos += glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
-    if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
-    {
-        bHQT = bodyHurri->getOrientation();
-        bodyHurri->setAngularVelocity(btVector3(1.f*bHQT.getY(),
-        0.f,0.f));
-        
-        /*bodyHurri->setLinearVelocity(btVector3(
-            -3.f*bHQT.getX()*bHQT.getZ(),
-            -1.f*bHQT.getY(),
-            bodyHurri->getLinearVelocity().getZ()
-        ));*/
-        btVector3 bhP = bodyHurri->getCenterOfMassPosition();
-        std::cout<<bhP.getX()<<" "<<bhP.getY()<<" "<<bhP.getZ()<<std::endl;
-    }
-       
-    if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
-    {
-        bHQT = bodyHurri->getOrientation();
-        bodyHurri->setAngularVelocity(btVector3(-1.f*bHQT.getY(),
-        0.f,0.f));
-        /*bodyHurri->setLinearVelocity(btVector3(
-            3.f*bHQT.getX()*bHQT.getZ(),
-            1.f*bHQT.getY(),
-            bodyHurri->getLinearVelocity().getZ()
-        ));*/
-        btVector3 bhP = bodyHurri->getCenterOfMassPosition();
-        std::cout<<bhP.getX()<<" "<<bhP.getY()<<" "<<bhP.getZ()<<std::endl;
-    }
+    if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS){
+ 		bodyHurri->setAngularVelocity(btVector3(0.5f,0.f,0.f));
+ 		bodyHurri->clearForces ();
+	}       
+    if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS){
+		bodyHurri->setAngularVelocity(btVector3(-0.5f,0.f,0.f));
+ 		bodyHurri->clearForces ();
+ 		
+	}
     if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS)
     {
-        bodyHurri->setAngularVelocity(btVector3(0.f,0.f,-0.5f));
+     bodyHurri->setAngularVelocity(btVector3(0.f,0.f,-0.5f));
+     bodyHurri->clearForces ();
     }
     if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS)
     {
         bodyHurri->setAngularVelocity(btVector3(0.f,0.f,0.5f));
+        bodyHurri->clearForces ();
     }
     if(glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS)
     {
@@ -556,7 +560,7 @@ void processInput(GLFWwindow *window)
     }
     if(glfwGetKey(window, GLFW_KEY_LEFT_ALT) == GLFW_PRESS)
     {
-        bodyHurri->applyCentralForce(btVector3(0.f,0.f,-0.5f));
+        bodyHurri->applyCentralForce(f);
     }
      
 }
