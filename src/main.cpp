@@ -491,7 +491,7 @@ void Init(){
     model_mat_location=  glGetUniformLocation (shader_programme, "model");
     
     bodoque = new airplane((char*)"mallas/Hurricane.obj",shader_programme);
-    bodoque->load_surface("textures/earth4k.jpg");
+    bodoque->load_surface("textures/Hurricane_model.jpg");
     bodoque->load_specular("textures/earth-specular-1k.jpg");
     e1 = new zeppelin((char*)"mallas/dirigible.obj");
    	//elsuelo = new suelo((char*)"mallas/sueloRef.obj");
