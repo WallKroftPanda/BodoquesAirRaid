@@ -1,40 +1,55 @@
 #ifndef MALLA_H
 #define MALLA_H
-using namespace std;
 
-class malla{
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
+#include <GL/glew.h>
+using namespace std;
+class malla/*: public malla*/{
     private:
-        GLuint vao, vbo;
-        int numvertices;
+        GLuint vao,vbo;
+        int numVertices;
+        char* filename;
+        glm::vec3 position;
+        glm::vec3 front;
         float angle;
-        glm::vec3 pos;
         glm::vec3 rotation;
         glm::vec3 scale;
+        glm::mat4 T;
         glm::mat4 modelMatrix;
-        char* filename;
-
-
-
-
+        
+    protected:
+        GLuint shader_programme;
+        GLuint tex;
+        GLuint stex;
+        GLuint matloc;
     public:
-        malla(char *filename);
-
-        // gets
-        GLuint getvao();
-        int getnumvertices();
-        glm::vec3 getpos();
+        malla(char* filename,GLuint);
+        void setPos(glm::vec3 p);
+        //getters
+        bool load_texture (const char* file_name, GLuint *tex, GLenum texslot);
+        GLuint getVao();
+        int getNumVertices();
+        int getBullets();
+        glm::vec3 getFront();
+        float getLife();
+        glm::vec3 getPosition();
         glm::vec3 getRotation();
-        char* getfilename();
+        char* getFilename();
+        
 
-        // sets
-        void setvao(GLuint vao);
-        void setnumvertices(int num);
-        void setpos(glm::vec3 p);
-        void setRotation(float ang, glm::vec3 rot);
+        //setters
+        void setVao(GLuint vao);
+        void setNumVertices(int num);
+        void setBullets(int bullet);
+        void setPosition(glm::vec3 pos, int model);
+        void setRotation(float ang,glm::vec3 rot,int model);
+        void setFileName(char *f);
         void setModelMatrix(glm::mat4 model);
-        void setfilename(char *f);
-
+    
         void draw(int matloc);
+        bool load_specular(const char *filename);
+        bool load_surface(const char *filename);
 };
-
 #endif

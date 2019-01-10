@@ -67,7 +67,7 @@ void airplane::draw(int matloc){
 		//matloc = glGetUniformLocation(shaderprog,"model");
 		glActiveTexture(GL_TEXTURE0);
     	glBindVertexArray(getVao());
-    	glBindTexture(GL_TEXTURE_2D, tex);
+    	glBindTexture(GL_TEXTURE_2D, this->tex);
 	    glUniformMatrix4fv(this->matloc, 1, GL_FALSE, &this->modelMatrix[0][0]);
         glBindVertexArray(this->getVao());
         glDrawArrays(GL_TRIANGLES, 0, this->getNumVertices());
