@@ -231,8 +231,8 @@ int main()
 	//glm::vec4 temp = glm::vec4(f.getX(),f.getY()+1.f,f.getZ(),0.f);
 	btTransform rot;
 	btMotionState *auxMS;
-	
-	float linea[] = {f.getX(), f.getY(), f.getZ(),prueba.getX(), prueba.getY(), prueba.getZ()};
+	//Por que se necesita una resta, para que dibuje la linea?
+	float linea[] = {f.getX(), f.getY(), f.getZ(),prueba.getX()-f.getX(), prueba.getY()-f.getY(), prueba.getZ()-f.getZ()};
 	
 	GLuint vboLin;
 	glGenBuffers( 1, &vboLin );
@@ -333,7 +333,7 @@ int main()
         //heli->setRotation(2,glm::vec3(1,0,0));
         heli->draw(model_mat_location);
         
-        prueba = trans*prueba.normalize();
+        //prueba = trans*prueba.normalize();
         /*temp = aux*temp;
         prueba.x = temp.x;
         prueba.y = temp.y;
