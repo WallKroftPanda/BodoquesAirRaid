@@ -223,19 +223,27 @@ int main()
 	glTexParameteri( GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
 
 	//Esto es para controlar front y visualizar vectores del avión
+	//centro de masa del avión:
 	btVector3 f = bodyHurri->getCenterOfMassPosition();
+	
+	//orientación del avión según bullet, representado como quaternion:
 	btQuaternion bFront = bodyHurri->getOrientation();
-	btVector3 prueba =btVector3(f.getX(),f.getY()+1.f,f.getZ());
+	
+	//Vector up inicializado como btVector3:
+	btVector3 prueba =btVector3(0.f,21.f,15.0f);
+	
+	//Si se quiere utilizar glm::vec3 para trabajar con los vectores del avión se debe descomentar esto:
+	//glm::vec3 prueba =glm::vec3(f.getX(),f.getY()+1.f,f.getZ(),0.f);
 	//glm::vec4 temp = glm::vec4(f.getX(),f.getY()+1.f,f.getZ(),0.f);
 	btTransform rot;
 	btMotionState *auxMS;
 	//Por que se necesita una resta, para que dibuje la linea?
-	float linea[] = {f.getX(), f.getY(), f.getZ(),prueba.getX()-f.getX(), prueba.getY()-f.getY(), prueba.getZ()-f.getZ()};
+	float linea[] = {f.getX(), f.getY(), f.getZ(),prueba.getX(), prueba.getY(), prueba.getZ()};
 	
 	GLuint vboLin;
 	glGenBuffers( 1, &vboLin );
 	glBindBuffer( GL_ARRAY_BUFFER, vboLin );
-	glBufferData( GL_ARRAY_BUFFER, 3 * 6 * sizeof( GLfloat ), &linea,GL_STATIC_DRAW );
+	glBufferData( GL_ARRAY_BUFFER, 3 * 2 * sizeof( GLfloat ), &linea,GL_STATIC_DRAW );
 	
 	GLuint vaoLin;
 	glGenVertexArrays( 1, &vaoLin );
@@ -341,17 +349,29 @@ int main()
         //heli->setRotation(2,glm::vec3(1,0,0));
         heli->draw(model_mat_location);
         
-        //prueba = trans*prueba.normalize();
+        //Por si se quiere usar btVector3
+        prueba = trans(prueba).normalize();
+        
+        //Por si se quiere usar glm::vec3
         /*temp = aux*temp;
         prueba.x = temp.x;
         prueba.y = temp.y;
         prueba.z = temp.z;*/
         
-        bFront=bodyHurri->getOrientation();
+        //Por si se quiere usar btQuaternion
+        //bFront=bodyHurri->getOrientation();
+        
         f = bodyHurri->getCenterOfMassPosition();
         
+        //En este print se imprime la posicíón    	Y la posición del punto que representa el "UP" 
+        // del centro de masa a la derecha			del avión a la izquierda
         
+        //ELija uno de los print dependiendo de con que tipo de dato está usando:
+        //btVector3 o btQuaternion:
         printf("X: %f Y: %f Z: %f --- X: %f Y: %f Z: %f \n", f.getX(), f.getY(), f.getZ(), prueba.getX(), prueba.getY(), prueba.getZ());
+        
+        //glm::vec3
+        //printf("X: %f Y: %f Z: %f --- X: %f Y: %f Z: %f \n", f.getX(), f.getY(), f.getZ(), prueba.x, prueba.y, prueba.z);
         
         glBindVertexArray( vaoLin );
 		glDrawArrays( GL_LINES, 0, 2 );
