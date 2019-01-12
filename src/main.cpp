@@ -102,7 +102,8 @@ glm::mat4 view;
 int view_mat_location;
 int proj_mat_location;
 
-
+// pantalla de bienvenida
+int menuInicio = 1;
 
 btTransform ballTransform;
 btRigidBody* bodyBall;
@@ -251,187 +252,201 @@ int main()
 	glEnableVertexAttribArray( 0 );
 	glBindBuffer( GL_ARRAY_BUFFER, vboLin );
 	glVertexAttribPointer( 0, 3, GL_FLOAT, GL_FALSE, 0, NULL );
-	
+	activarMouse();
     while (!glfwWindowShouldClose(g_window)){
-    	
-    	debug->setView(&view);
-		debug->setProj(&projection);
-		dynamicsWorld->debugDrawWorld();
-		debug->drawLines();
-		
-        //time
-        float currentFrame = glfwGetTime();
-        deltaTime = currentFrame - lastFrame;
-        if (deltaTime < 0.016f){
-            continue;
+        
+        if(menuInicio){
+            debug->setView(&view);
+            debug->setProj(&projection);
+            dynamicsWorld->debugDrawWorld();
+            debug->drawLines();
+            glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
+            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+            glUseProgram (shader_programme);
+            view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
+            glUniformMatrix4fv(view_mat_location, 1, GL_FALSE, &view[0][0]);
+            
+            ImGui:: CreateContext ();
+            
+            ImGui_ImplOpenGL3_NewFrame();
+            ImGui_ImplGlfw_NewFrame();
+            ImGui::NewFrame();
+            GUILayout();
+            //funcion propia de imgui 
+            ImGui::Render();
+            //hace lo que creen que hace
+            ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+            glfwSwapBuffers(g_window);
+            glfwPollEvents();
+            //time
         }
-        lastFrame = currentFrame;
-        /* inicializa los frames*/
-        ImGui_ImplOpenGL3_NewFrame();
-        ImGui_ImplGlfw_NewFrame();
-        ImGui::NewFrame();
+        if (inGame) {
+            debug->setView(&view);
+            debug->setProj(&projection);
+            dynamicsWorld->debugDrawWorld();
+            debug->drawLines();
 
-        dynamicsWorld->stepSimulation(1.f / 60.f, 10);
+            float currentFrame = glfwGetTime();
+            deltaTime = currentFrame - lastFrame;
+            if (deltaTime < 0.016f){
+                continue;
+            }
+            lastFrame = currentFrame;
+            /* inicializa los frames*/
 
-            processInput(g_window);
-        if(inGame){
+            dynamicsWorld->stepSimulation(1.f / 60.f, 10);
 
+                processInput(g_window);
+
+            glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
+            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+                glUseProgram (skybox_shader);
+
+            glDepthMask( GL_FALSE );
+            glUseProgram( skybox_shader );
+            glActiveTexture( GL_TEXTURE0 );
+            glBindTexture( GL_TEXTURE_CUBE_MAP, cube_map_texture );
+            glBindVertexArray( vaosky );
+            glDrawArrays( GL_TRIANGLES, 0, 36 );
+            glDepthMask( GL_TRUE );
+            
+            glUseProgram (skybox_shader);
+            glUniformMatrix4fv(view_skybox, 1, GL_FALSE, &view[0][0]);
+
+            /*
+                --date=relative
+            */
+            
+            glUseProgram (shader_programme);
+            view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
+            glUniformMatrix4fv(view_mat_location, 1, GL_FALSE, &view[0][0]);
+            
+            
+            // ------
+        
+            //glUniformMatrix4fv(view_mat_location, 1, GL_FALSE, &view[0][0]);
+                
+
+            // activate shader
+            // render
+
+            // CREANDO CUERPOS RIGIDOS
+            ////////////////////////////////
+            btTransform trans;
+
+            bodyBall->getMotionState()->getWorldTransform(trans); // Se guarda la informacion de transformaciones de bodyBall en trans
+            // Y se obtiene la matrix model directamente desde bullet
+            trans.getOpenGLMatrix(&aux[0][0]);
+            ball->setModelMatrix(aux);
+            ball->draw(model_mat_location);
+
+            bodyZep->getMotionState()->getWorldTransform(trans);
+            trans.getOpenGLMatrix(&aux[0][0]);
+            e1->setModelMatrix(aux);
+            e1->draw(model_mat_location);
+            
+            //mapa
+            //bodySuelo->getMotionState()->getWorldTransform(trans);
+            //trans.getOpenGLMatrix(&aux[0][0]);
+            //elsuelo->setModelMatrix(aux);
+            //elsuelo->draw(model_mat_location);
+            menu->draw(model_mat_location);
+            menu->setPos(glm::vec3(10.0f,15.0f,-25.0f));
+            //Hurricane
+            bodyHurri->getMotionState()->getWorldTransform(trans);
+            //trans.setRotation(bFront);
+            trans.getOpenGLMatrix(&aux[0][0]);
+            
+            
+            bodoque->setModelMatrix(aux);
+            bodoque->draw(model_mat_location);
+            aletasT->setModelMatrix(aux);
+            aletasL->setModelMatrix(aux);
+            aletaT->setModelMatrix(aux);
+            aletasT->draw(model_mat_location);
+            aletasL->draw(model_mat_location);
+            aletaT->draw(model_mat_location);
+            heli->setModelMatrix(aux);
+            //heli->setRotation(2,glm::vec3(1,0,0));
+            heli->draw(model_mat_location);
+            
+            //Por si se quiere usar btVector3
+            prueba = trans(prueba).normalize();
+            
+            //Por si se quiere usar glm::vec3
+            /*temp = aux*temp;
+            prueba.x = temp.x;
+            prueba.y = temp.y;
+            prueba.z = temp.z;*/
+            
+            //Por si se quiere usar btQuaternion
+            //bFront=bodyHurri->getOrientation();
+            
+            f = bodyHurri->getCenterOfMassPosition();
+            
+            //En este print se imprime la posicíón    	Y la posición del punto que representa el "UP" 
+            // del centro de masa a la derecha			del avión a la izquierda
+            
+            //ELija uno de los print dependiendo de con que tipo de dato está usando:
+            //btVector3 o btQuaternion:
+            printf("X: %f Y: %f Z: %f --- X: %f Y: %f Z: %f \n", f.getX(), f.getY(), f.getZ(), prueba.getX(), prueba.getY(), prueba.getZ());
+            
+            //glm::vec3
+            //printf("X: %f Y: %f Z: %f --- X: %f Y: %f Z: %f \n", f.getX(), f.getY(), f.getZ(), prueba.x, prueba.y, prueba.z);
+            
+            glBindVertexArray( vaoLin );
+            glDrawArrays( GL_LINES, 0, 2 );
+            
+            /*linea[0]=c.getX();
+            linea[1]=c.getY();
+            linea[2]=c.getZ();
+            linea[3]=axis.getX();
+            linea[4]=axis.getY();
+            linea[5]=axis.getZ();*/
+            //Se dibuja la linea de orientacion
+            ///w///////////////////////
+
+            //camara->setProjection(fov);
+
+            //camara->setView();
+            //Dibujar suelo
+            
+            //Dibujar zeppelin
+            
+
+            // DIBUJAR CAJA DE MUNICION
+            pickUp->setPos(glm::vec3(-10.0f,15.0f,-25.0f));
+            // glBindVertexArray(pickUp->getvao());
+            // glDrawArrays(GL_TRIANGLES,0,pickUp->getnumvertices());
+            //pickUp->setModelMatrix(aux);
+            pickUp->draw(model_mat_location);
+            //Dibujar ElMono
+            ElMono->setPos(glm::vec3(-30.0f,2.0f,5.0f));
+            glBindVertexArray(ElMono->getVao());
+            glDrawArrays(GL_TRIANGLES,0,ElMono->getNumVertices());
+
+            /*e1->setPosition(glm::vec3(4.0f,-1.0f,0.0f));
+            glBindVertexArray(e1->getVao());
+            e1->draw(model_mat_location);
+
+            /*funcion donde se define lo que se dibuja de la GUI*/
+            debug->setView(&view);
+            debug->setProj(&projection);
+            dynamicsWorld->debugDrawWorld();
+            debug->drawLines();
+
+            if(bodyHurri->getCenterOfMassPosition().getY()<=75)
+            {
+                bodyHurri->applyForce(btVector3(0,5,0),btVector3(0,1,0));
+            }
+            bodyHurri->setAngularVelocity(bodyHurri->getAngularVelocity()*-1);
+            btVector3 bpos = bodyHurri->getCenterOfMassPosition();
+            cameraPos = glm::vec3(bpos.getX(),bpos.getY()+1.f,bpos.getZ()+6.f);
+            glfwSwapBuffers(g_window);
+            glfwPollEvents();
         }
-        glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        	glUseProgram (skybox_shader);
-
-		glDepthMask( GL_FALSE );
-		glUseProgram( skybox_shader );
-		glActiveTexture( GL_TEXTURE0 );
-		glBindTexture( GL_TEXTURE_CUBE_MAP, cube_map_texture );
-		glBindVertexArray( vaosky );
-		glDrawArrays( GL_TRIANGLES, 0, 36 );
-		glDepthMask( GL_TRUE );
-		
-		glUseProgram (skybox_shader);
-		glUniformMatrix4fv(view_skybox, 1, GL_FALSE, &view[0][0]);
-
-        /*
-            --date=relative
-        */
-		
-		glUseProgram (shader_programme);
-        view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
-	    glUniformMatrix4fv(view_mat_location, 1, GL_FALSE, &view[0][0]);
-	    
-	    
-        // ------
-       
-		//glUniformMatrix4fv(view_mat_location, 1, GL_FALSE, &view[0][0]);
-			
-
-        // activate shader
-        // render
-
-        // CREANDO CUERPOS RIGIDOS
-        ////////////////////////////////
-        btTransform trans;
-
-        bodyBall->getMotionState()->getWorldTransform(trans); // Se guarda la informacion de transformaciones de bodyBall en trans
-        // Y se obtiene la matrix model directamente desde bullet
-        trans.getOpenGLMatrix(&aux[0][0]);
-        ball->setModelMatrix(aux);
-        ball->draw(model_mat_location);
-
-        bodyZep->getMotionState()->getWorldTransform(trans);
-        trans.getOpenGLMatrix(&aux[0][0]);
-        e1->setModelMatrix(aux);
-        e1->draw(model_mat_location);
-		
-		//mapa
-        //bodySuelo->getMotionState()->getWorldTransform(trans);
-        //trans.getOpenGLMatrix(&aux[0][0]);
-        //elsuelo->setModelMatrix(aux);
-        //elsuelo->draw(model_mat_location);
-        menu->draw(model_mat_location);
-        menu->setPos(glm::vec3(10.0f,15.0f,-25.0f));
-        //Hurricane
-        bodyHurri->getMotionState()->getWorldTransform(trans);
-        //trans.setRotation(bFront);
-        trans.getOpenGLMatrix(&aux[0][0]);
         
-        
-        bodoque->setModelMatrix(aux);
-        bodoque->draw(model_mat_location);
-        aletasT->setModelMatrix(aux);
-        aletasL->setModelMatrix(aux);
-        aletaT->setModelMatrix(aux);
-        aletasT->draw(model_mat_location);
-        aletasL->draw(model_mat_location);
-        aletaT->draw(model_mat_location);
-        heli->setModelMatrix(aux);
-        //heli->setRotation(2,glm::vec3(1,0,0));
-        heli->draw(model_mat_location);
-        
-        //Por si se quiere usar btVector3
-        prueba = trans(prueba).normalize();
-        
-        //Por si se quiere usar glm::vec3
-        /*temp = aux*temp;
-        prueba.x = temp.x;
-        prueba.y = temp.y;
-        prueba.z = temp.z;*/
-        
-        //Por si se quiere usar btQuaternion
-        //bFront=bodyHurri->getOrientation();
-        
-        f = bodyHurri->getCenterOfMassPosition();
-        
-        //En este print se imprime la posicíón    	Y la posición del punto que representa el "UP" 
-        // del centro de masa a la derecha			del avión a la izquierda
-        
-        //ELija uno de los print dependiendo de con que tipo de dato está usando:
-        //btVector3 o btQuaternion:
-        printf("X: %f Y: %f Z: %f --- X: %f Y: %f Z: %f \n", f.getX(), f.getY(), f.getZ(), prueba.getX(), prueba.getY(), prueba.getZ());
-        
-        //glm::vec3
-        //printf("X: %f Y: %f Z: %f --- X: %f Y: %f Z: %f \n", f.getX(), f.getY(), f.getZ(), prueba.x, prueba.y, prueba.z);
-        
-        glBindVertexArray( vaoLin );
-		glDrawArrays( GL_LINES, 0, 2 );
-		
-        /*linea[0]=c.getX();
-        linea[1]=c.getY();
-        linea[2]=c.getZ();
-        linea[3]=axis.getX();
-        linea[4]=axis.getY();
-        linea[5]=axis.getZ();*/
-        //Se dibuja la linea de orientacion
-        ///w///////////////////////
-
-	    //camara->setProjection(fov);
-
-        //camara->setView();
-        //Dibujar suelo
-        
-        //Dibujar zeppelin
-        
-
-        // DIBUJAR CAJA DE MUNICION
-        pickUp->setPos(glm::vec3(-10.0f,15.0f,-25.0f));
-        // glBindVertexArray(pickUp->getvao());
-        // glDrawArrays(GL_TRIANGLES,0,pickUp->getnumvertices());
-        //pickUp->setModelMatrix(aux);
-        pickUp->draw(model_mat_location);
-        //Dibujar ElMono
-        ElMono->setPos(glm::vec3(-30.0f,2.0f,5.0f));
-        glBindVertexArray(ElMono->getVao());
-        glDrawArrays(GL_TRIANGLES,0,ElMono->getNumVertices());
-
-		/*e1->setPosition(glm::vec3(4.0f,-1.0f,0.0f));
-        glBindVertexArray(e1->getVao());
-        e1->draw(model_mat_location);
-
-        /*funcion donde se define lo que se dibuja de la GUI*/
-        GUILayout();
-
-        //funcion propia de imgui 
-        ImGui::Render();
-        //hace lo que creen que hace
-        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-        debug->setView(&view);
-		debug->setProj(&projection);
-		dynamicsWorld->debugDrawWorld();
-		debug->drawLines();
-
-        if(bodyHurri->getCenterOfMassPosition().getY()<=75)
-        {
-            bodyHurri->applyForce(btVector3(0,5,0),btVector3(0,1,0));
-        }
-        bodyHurri->setAngularVelocity(bodyHurri->getAngularVelocity()*-1);
-        btVector3 bpos = bodyHurri->getCenterOfMassPosition();
-        cameraPos = glm::vec3(bpos.getX(),bpos.getY()+1.f,bpos.getZ()+6.f);
-        
-        glfwSwapBuffers(g_window);
-        glfwPollEvents();
     }
-
 
         /*limpia todo*/
     ImGui_ImplOpenGL3_Shutdown();
@@ -442,19 +457,24 @@ int main()
 }
 
 void GUILayout(){
-    
-            static float f = 0.0f;
-            static int counter = 0;
+            const ImVec2 size(1400, 1200);
+            bool open = true;
+            float alpha = 0.90f;
 
-            ImGui::Begin("Hello, world!");                          // Create a window called "Hello, world!" and append into it.
-            ImGui::Text("This is some useful text.");               // Display some text (you can use a format strings too) // Edit 3 floats representing a color
-
+              
+            ImGui::Begin("Hello, world!",&open, alpha);                          // Create a window called "Hello, world!" and append into it.
+            ImGui::SetWindowPos("Hello, world!",ImVec2(10,10));
+            ImGui::SetWindowSize(ImVec2(g_gl_width-20, g_gl_height-20));
+            ImGui::Text("Bienvenidos a el proyecto Bodoque.....para un final!!!");               // Display some text (you can use a format strings too) // Edit 3 floats representing a color
+            ImGui::Text("Para Seleccionar una opcion debe presionar la tecla ESPACIO");
             if (ImGui::Button("Jugar")) {                           // Buttons return true when clicked (most widgets return true when edited/activated)
-                activarMouse();
+                
                 inGame=true;
+                menuInicio = false;
             }else if(ImGui::Button("Salir")){
                 glfwSetWindowShouldClose(g_window, true);
             }
+            
 
             ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
             ImGui::End();
