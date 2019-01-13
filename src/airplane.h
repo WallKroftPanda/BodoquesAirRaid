@@ -1,6 +1,6 @@
 #ifndef AIRPLANE_H
 #define AIRPLANE_H
-
+#include "addons.h"
 #include "malla.h"
 
 using namespace std;
@@ -18,6 +18,7 @@ class airplane/*: public malla*/{
         glm::vec3 scale;
         glm::mat4 T;
         glm::mat4 modelMatrix;
+        btRigidBody* aBody;
         
     protected:
         GLuint shader_programme;
@@ -36,6 +37,7 @@ class airplane/*: public malla*/{
         glm::vec3 getPosition();
         glm::vec3 getRotation();
         char* getFilename();
+        btRigidBody* getABody();
         
 
         //setters
@@ -49,12 +51,13 @@ class airplane/*: public malla*/{
 
         void draw(int matloc);
         
-        //Funcionalidades del avión deben ser implementadas más adelante junto con bullet... 
+        /*Funcionalidades del avión deben ser implementadas más adelante junto con bullet... 
         void explotar();
         void girar_IZQ(); //movimiento de palas para girar a la izquierda 
         void girar_DER();//movimiento de palas para girar a la derecha
         void inc_VEL(); //Incrementar velocidad
-        void dis_VEL(); //Reducir velocidad
+        void dis_VEL(); //Reducir velocidad*/
+        void setABody(btRigidBody* aBody);
         bool load_specular(const char *filename);
         bool load_surface(const char *filename);
 };

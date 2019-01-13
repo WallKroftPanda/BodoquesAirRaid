@@ -139,3 +139,13 @@ void malla::setPos(glm::vec3 p){
     this->position = p;
     this->modelMatrix = glm::translate(glm::mat4(1.0f), this->position);
 }
+
+void malla::setMBody(btRigidBody *mBody)
+{
+    this->mBody = mBody;
+}
+
+btRigidBody* malla::getMBody()
+{
+    return this->mBody;
+}

@@ -43,6 +43,10 @@ glm::vec3 airplane::getPosition(){
 glm::vec3 airplane::getRotation(){
     return this->rotation;
 }
+btRigidBody* airplane::getABody()
+{
+    return this->aBody;
+}
 char* airplane::getFilename(){
     return this->filename;
 }
@@ -137,4 +141,9 @@ bool airplane::load_specular(const char *filename){
     //assert( tex_location > -1 );
     glUniform1i( tex_location, 1 );
     return true;
+}
+
+void airplane::setABody(btRigidBody* aBody)
+{
+    this->aBody = aBody;
 }

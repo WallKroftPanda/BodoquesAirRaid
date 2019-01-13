@@ -16,6 +16,7 @@ using namespace irrklang;
 
 int g_gl_width = 1280;
 int g_gl_height = 720;
+int bullet_Count = 0;
 GLFWwindow* g_window = NULL;
 GLuint shader_programme;
 //Posiciones de camara
@@ -23,15 +24,19 @@ camera *camara;
 glm::vec3 cameraPos   = glm::vec3(0.0f, 10.0f, 0.0f);
 glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, -1.0f);
 glm::vec3 cameraUp    = glm::vec3(0.0f, 1.0f, 0.0f);
+glm::mat4 aux;
+btDiscreteDynamicsWorld* dynamicsWorld;
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 void processInput(GLFWwindow *window);
-btRigidBody* crearCuerpoRigido(float posX,float posY,float posZ,float masa,float alfa, float dirX,float dirY,float dirZ, float colX, float colY, float colZ, btDiscreteDynamicsWorld* mundoFisico);
+btRigidBody* crearCuerpoRigido(float posX,float posY,float posZ,float masa,float alfa, float dirX,float dirY,float dirZ, float colX, float colY, float colZ);
 void Init();
 void activarMouse();
 void GUILayout();
+void checkCollision();
+void drawBala();
 bool load_cube_map_side( GLuint texture, GLenum side_target, const char *file_name ) {
 	
 	glBindTexture( GL_TEXTURE_CUBE_MAP, texture );
@@ -71,17 +76,20 @@ ISoundEngine *SoundEngine;
 
 airplane* avion;
 bool inGame=false;
+bool alive = true;
+bool Win = false;
+int count_balas = 0;
 int model_mat_location;
 
 airplane *bodoque;
 zeppelin *e1;
 //sky skycube;
-//suelo *elsuelo;
+suelo *elsuelo;
 malla *ElMono;
 malla *pickUp;
 malla *ball;
 malla *caja;
-
+malla *bala;
 malla *menu;
 
 malla *aletasT;
@@ -105,13 +113,17 @@ int proj_mat_location;
 // pantalla de bienvenida
 int menuInicio = 1;
 
-btTransform ballTransform;
+btTransform trans;
 btRigidBody* bodyBall;
 btRigidBody* bodySuelo;
 btRigidBody* bodyCaja;
 btRigidBody* bodyHurri;
 btRigidBody* bodyZep;
 btQuaternion bHQT;
+
+float pHx,pHy,pHz;//Posición del hurricane
+float cHx,cHy,cHz;//Tamaño caja de colision de hurricane
+float pZx,pZy,pZz,cZx,cZy,cZz;//Tamaño caja y posicion de zepelin
 
 int main()
 {
@@ -171,16 +183,26 @@ int main()
 	btBroadphaseInterface* overlappingPairCache = new btDbvtBroadphase();
 	btSequentialImpulseConstraintSolver* solver = new btSequentialImpulseConstraintSolver;
 	// Creacion del mundo fisico - Uno por aplicacion
-    btDiscreteDynamicsWorld* dynamicsWorld = new btDiscreteDynamicsWorld(dispatcher, overlappingPairCache, solver, collisionConfiguration);
+    dynamicsWorld = new btDiscreteDynamicsWorld(dispatcher, overlappingPairCache, solver, collisionConfiguration);
 	// Vector de gravedad
     dynamicsWorld->setGravity(btVector3(0, -10, 0));
     //btRigidBody* crearCuerpoRigido(float posX,float posY,float posZ,float masa,float alfa, float dirX,float dirY,float dirZ, btDiscreteDynamicsWorld* mundoFisico){
 
-    bodyBall = crearCuerpoRigido( 0.0 , 10.0, -10.0, 5.0,0.0,1.0,0.0,0.0,1.0,1.0,1.0,dynamicsWorld);
-    bodySuelo = crearCuerpoRigido(0.0f,1.0f,  0.0f, 0.0,0.0,0.0,0.0,1.0,50.0,1.0,50.0,dynamicsWorld);
+    //bodyBall = crearCuerpoRigido( 0.0 , 10.0, -10.0, 5.0,0.0,1.0,0.0,0.0,1.0,1.0,1.0);
+    bodySuelo = crearCuerpoRigido(0.0f,0.0f,  0.0f, 0.0,0.0,0.0,0.0,1.0,500.0,1.0,500.0);
+    bodySuelo->setUserPointer(&bodySuelo);
+    dynamicsWorld->addRigidBody(bodySuelo);
+    pZx=-21.f;pZy=40.f;pZz=-50.f;cZx=25.0;cZy=3.0;cZz=3.0;
+    e1->setRBody(crearCuerpoRigido(pZx,pZy,pZz,0.0f,0,0,0,1.0f,cZx,cZy,cZz));
+    e1->getRBody()->setUserPointer(&e1);
+    dynamicsWorld->addRigidBody(e1->getRBody());
+    cHx=3.0;cHy=1.0;cHz=3.0;
     
-    bodyZep =crearCuerpoRigido(-21.0f,10.0f,-50.0f,0.0f,0,0,0,1.0f,25.0,3.0,3.0,dynamicsWorld);
-    bodyHurri =crearCuerpoRigido(0.f,20.f,15.0f,0.5f,0.0f,1.0f,0.0f,1.0f,3.0,1.0,3.0,dynamicsWorld);
+    bodoque->setABody(crearCuerpoRigido(0.f,40.f,10.f,0.5f,0.0f,1.0f,0.0f,1.0f,cHx,cHy,cHz));
+    bodoque->getABody()->setUserPointer(&bodoque);
+    bodoque->getABody()->setLinearVelocity(btVector3(0.0f,0.f,-0.5f));
+    dynamicsWorld->addRigidBody(bodoque->getABody());
+    alive = true;
     
 //    btRigidBody* crearCuerpoRigido(float posX,float posY,float posZ,float masa,float alfa, float dirX,float dirY,float dirZ, float colX, float colY, float colZ, btDiscreteDynamicsWorld* mundoFisico);
 
@@ -193,7 +215,7 @@ int main()
 	debug->setProj(&projection);
 	dynamicsWorld->setDebugDrawer(debug);
 	
-    glm::mat4 aux;
+    
 	glm::mat4 modelMatrixUp;
 
     GLuint skybox_shader = create_programme_from_files ( SKYBOX_VERTEX_SHADER_FILE, SKYBOX_FRAGMENT_SHADER_FILE);
@@ -225,10 +247,10 @@ int main()
 
 	//Esto es para controlar front y visualizar vectores del avión
 	//centro de masa del avión:
-	btVector3 f = bodyHurri->getCenterOfMassPosition();
+	btVector3 f = bodoque->getABody()->getCenterOfMassPosition();
 	
 	//orientación del avión según bullet, representado como quaternion:
-	btQuaternion bFront = bodyHurri->getOrientation();
+	btQuaternion bFront = bodoque->getABody()->getOrientation();
 	
 	//Vector up inicializado como btVector3:
 	btVector3 prueba =btVector3(0.f,21.f,15.0f);
@@ -332,15 +354,20 @@ int main()
 
             // CREANDO CUERPOS RIGIDOS
             ////////////////////////////////
-            btTransform trans;
-
+            
+            bodySuelo->getMotionState()->getWorldTransform(trans);
+            trans.getOpenGLMatrix(&aux[0][0]);
+            elsuelo->setModelMatrix(aux);
+            elsuelo->draw(model_mat_location);
+            printf("\nHERE\n");
+            /*
             bodyBall->getMotionState()->getWorldTransform(trans); // Se guarda la informacion de transformaciones de bodyBall en trans
             // Y se obtiene la matrix model directamente desde bullet
             trans.getOpenGLMatrix(&aux[0][0]);
             ball->setModelMatrix(aux);
             ball->draw(model_mat_location);
-
-            bodyZep->getMotionState()->getWorldTransform(trans);
+            */
+            e1->getRBody()->getMotionState()->getWorldTransform(trans);
             trans.getOpenGLMatrix(&aux[0][0]);
             e1->setModelMatrix(aux);
             e1->draw(model_mat_location);
@@ -353,22 +380,36 @@ int main()
             menu->draw(model_mat_location);
             menu->setPos(glm::vec3(10.0f,15.0f,-25.0f));
             //Hurricane
-            bodyHurri->getMotionState()->getWorldTransform(trans);
-            //trans.setRotation(bFront);
-            trans.getOpenGLMatrix(&aux[0][0]);
-            
-            
-            bodoque->setModelMatrix(aux);
-            bodoque->draw(model_mat_location);
-            aletasT->setModelMatrix(aux);
-            aletasL->setModelMatrix(aux);
-            aletaT->setModelMatrix(aux);
-            aletasT->draw(model_mat_location);
-            aletasL->draw(model_mat_location);
-            aletaT->draw(model_mat_location);
-            heli->setModelMatrix(aux);
-            //heli->setRotation(2,glm::vec3(1,0,0));
-            heli->draw(model_mat_location);
+            if(alive)
+            {
+                //Hurricane
+                bodoque->getABody()->getMotionState()->getWorldTransform(trans);
+                trans.getOpenGLMatrix(&aux[0][0]);
+                bodoque->setModelMatrix(aux);
+                bodoque->draw(model_mat_location);
+                aletasT->setModelMatrix(aux);
+                aletasL->setModelMatrix(aux);
+                aletaT->setModelMatrix(aux);
+                aletasT->draw(model_mat_location);
+                aletasL->draw(model_mat_location);
+                aletaT->draw(model_mat_location);
+                heli->setModelMatrix(aux);
+                heli->setRotation(1,glm::vec3(1,0,0));
+                heli->draw(model_mat_location);
+                ///w///////////////////////
+                if(bodoque->getABody()->getCenterOfMassPosition().getY()<=75)
+                {
+                    bodoque->getABody()->applyForce(btVector3(0,5,0),btVector3(0,1,0));
+                }
+                bodoque->getABody()->setAngularVelocity(bodoque->getABody()->getAngularVelocity()*-1);
+                btVector3 bpos = bodoque->getABody()->getCenterOfMassPosition();
+                cameraPos = glm::vec3(bpos.getX(),bpos.getY()+1.f,bpos.getZ()+6.f);
+                pHx=bpos.getX();
+                pHy=bodoque->getABody()->getCenterOfMassPosition().getY();
+                pHz=bodoque->getABody()->getCenterOfMassPosition().getZ();
+                f = bodoque->getABody()->getCenterOfMassPosition();
+            }
+
             
             //Por si se quiere usar btVector3
             prueba = trans(prueba).normalize();
@@ -382,7 +423,7 @@ int main()
             //Por si se quiere usar btQuaternion
             //bFront=bodyHurri->getOrientation();
             
-            f = bodyHurri->getCenterOfMassPosition();
+            
             
             //En este print se imprime la posicíón    	Y la posición del punto que representa el "UP" 
             // del centro de masa a la derecha			del avión a la izquierda
@@ -415,16 +456,17 @@ int main()
             
 
             // DIBUJAR CAJA DE MUNICION
-            pickUp->setPos(glm::vec3(-10.0f,15.0f,-25.0f));
+            //pickUp->setPos(glm::vec3(-10.0f,15.0f,-25.0f));
             // glBindVertexArray(pickUp->getvao());
             // glDrawArrays(GL_TRIANGLES,0,pickUp->getnumvertices());
             //pickUp->setModelMatrix(aux);
-            pickUp->draw(model_mat_location);
+            //pickUp->draw(model_mat_location);
             //Dibujar ElMono
+            /*
             ElMono->setPos(glm::vec3(-30.0f,2.0f,5.0f));
             glBindVertexArray(ElMono->getVao());
             glDrawArrays(GL_TRIANGLES,0,ElMono->getNumVertices());
-
+            */
             /*e1->setPosition(glm::vec3(4.0f,-1.0f,0.0f));
             glBindVertexArray(e1->getVao());
             e1->draw(model_mat_location);
@@ -434,14 +476,8 @@ int main()
             debug->setProj(&projection);
             dynamicsWorld->debugDrawWorld();
             debug->drawLines();
-
-            if(bodyHurri->getCenterOfMassPosition().getY()<=75)
-            {
-                bodyHurri->applyForce(btVector3(0,5,0),btVector3(0,1,0));
-            }
-            bodyHurri->setAngularVelocity(bodyHurri->getAngularVelocity()*-1);
-            btVector3 bpos = bodyHurri->getCenterOfMassPosition();
-            cameraPos = glm::vec3(bpos.getX(),bpos.getY()+1.f,bpos.getZ()+6.f);
+            
+            checkCollision();
             glfwSwapBuffers(g_window);
             glfwPollEvents();
         }
@@ -534,7 +570,7 @@ void Init(){
     bodoque->load_surface("textures/Hurricane_model.jpg");
     bodoque->load_specular("textures/earth-specular-1k.jpg");
     e1 = new zeppelin((char*)"mallas/dirigible.obj");
-   	//elsuelo = new suelo((char*)"mallas/sueloRef.obj");
+   	elsuelo = new suelo((char*)"mallas/sueloRef.obj");
     ElMono = new malla((char*)"mallas/suzanne.obj",shader_programme);
     pickUp = new malla((char*) "mallas/caja.obj",shader_programme);
     ball = new malla((char*)"mallas/ball.obj",shader_programme);
@@ -576,31 +612,34 @@ void processInput(GLFWwindow *window)
     if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
         cameraPos += glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
     if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS){
- 		bodyHurri->setAngularVelocity(btVector3(0.5f,0.f,0.f));
- 		bodyHurri->clearForces ();
+ 		bodoque->getABody()->setAngularVelocity(btVector3(+0.5f,0.f,0.f));
+        bodoque->getABody()->setLinearVelocity(bodoque->getABody()->getLinearVelocity() + btVector3(0.0f,-0.1f,0.f));
 	}       
     if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS){
-		bodyHurri->setAngularVelocity(btVector3(-0.5f,0.f,0.f));
- 		bodyHurri->clearForces ();
+		bodoque->getABody()->setAngularVelocity(btVector3(-0.5f,0.0f,0.0f));
+        bodoque->getABody()->setLinearVelocity(bodoque->getABody()->getLinearVelocity() + btVector3(0.0f,0.1f,0.f));
  		
 	}
     if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS)
     {
-     bodyHurri->setAngularVelocity(btVector3(0.f,0.f,-0.5f));
-     bodyHurri->clearForces ();
+        bodoque->getABody()->getAngularFactor();
+        bodoque->getABody()->setAngularVelocity(btVector3(0.f,0.f,-0.5f));
     }
     if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS)
     {
-        bodyHurri->setAngularVelocity(btVector3(0.f,0.f,0.5f));
-        bodyHurri->clearForces ();
+       bodoque->getABody()->setAngularVelocity(btVector3(0.f,0.f,0.5f));
     }
     if(glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS)
     {
-        if(bodyHurri->getLinearVelocity().getZ()<-0.5f)bodyHurri->applyCentralForce(btVector3(0.f,0.f,1.f));
+        if(bodoque->getABody()->getLinearVelocity().getZ()<-0.5f)bodoque->getABody()->applyCentralForce(btVector3(0.f,0.f,1.f));
     }
     if(glfwGetKey(window, GLFW_KEY_LEFT_ALT) == GLFW_PRESS)
     {
-        bodyHurri->applyCentralForce(f);
+        bodoque->getABody()->applyCentralForce(btVector3(0.f,0.f,-0.5f));
+    }
+    if(alive && glfwGetKey(window, GLFW_KEY_Z)== GLFW_PRESS)
+    {
+        drawBala();
     }
      
 }
@@ -646,7 +685,7 @@ void scroll_callback(GLFWwindow* window, double xoffset, double yoffset){
         fov = 45.0f;
 }
 
-btRigidBody* crearCuerpoRigido(float posX,float posY,float posZ,float masa,float alfa, float dirX,float dirY,float dirZ, float colX, float colY, float colZ, btDiscreteDynamicsWorld* mundoFisico){
+btRigidBody* crearCuerpoRigido(float posX,float posY,float posZ,float masa,float alfa, float dirX,float dirY,float dirZ, float colX, float colY, float colZ){
 
     btCollisionShape* Shape = new btBoxShape(btVector3(colX,colY,colZ));
 
@@ -665,9 +704,7 @@ btRigidBody* crearCuerpoRigido(float posX,float posY,float posZ,float masa,float
     btDefaultMotionState* MotionState = new btDefaultMotionState(Transform);
     btRigidBody::btRigidBodyConstructionInfo RbInfo(Mass, MotionState, Shape, localInertia);
     btRigidBody* body = new btRigidBody(RbInfo);
-    body->setActivationState(DISABLE_DEACTIVATION);     
-    
-    mundoFisico->addRigidBody(body);
+    body->setActivationState(DISABLE_DEACTIVATION);  
     return body;
 }
 
@@ -704,20 +741,56 @@ btRigidBody* crearCuerpoRigido(float posX,float posY,float posZ,float masa,float
     }
 }*/
 
-void Logica(){
-    /*
-    //  DISPARAR
-    El avion tendra una cantidad limitada de municiones, estas se pueden aumentar
-    a medida que coleccione cajas en el aire (drop). Si se le acaban las balas el
-    jugador pierde, en caso de haber eliminado todos los objetivos el jugador gana.
-    //  MOVERSE
-    Movimiento en desarrollo, idealmente se rota con A (izquierda) y D (derecha),
-    S para subir el morro y W para bajarlo, se intentara implementar comandos para
-    acelerar o desacelerar el avion (el avion no poseera velocidad constante).
-    //  COLISIONAR
-    Dirigibles y el suelo seran objetos en los cuales si el jugador choca, pierde
-    //  MAPA
-    El mapa se modificara acorde al desarrollo del juego, de manera preliminar
-    se puede decir que al salir del mapa el jugador pierde automaticamente
-    */
+void checkCollision()
+{
+    int numManifolds = dynamicsWorld->getDispatcher()->getNumManifolds();
+    #pragma omp parallel for schedule(dynamic,4)
+    for(int i = 0; i < numManifolds; ++i)
+    {
+        btPersistentManifold* contactManifold = dynamicsWorld->getDispatcher()->getManifoldByIndexInternal(i);
+        const btCollisionObject* obA = static_cast<const btCollisionObject*>(contactManifold->getBody0());
+        const btCollisionObject* obB = static_cast<const btCollisionObject*>(contactManifold->getBody1());
+        
+        if((&bodoque==obA->getUserPointer() and &e1==obB->getUserPointer()) or (&bodoque==obB->getUserPointer() and &e1==obA->getUserPointer()))
+        {
+            alive = false;
+            printf("Choco zepelin con avion\n");
+        }   
+        else if((&bodySuelo==obA->getUserPointer() and &bodoque==obB->getUserPointer()) or (&bodoque==obA->getUserPointer() and &bodySuelo==obB->getUserPointer()))
+        {
+            alive = false;
+            printf("Choco avion con el suelo\n");
+        }
+        else if((&bala==obB->getUserPointer() && &e1==obA->getUserPointer())||(&bala==obA->getUserPointer() && &e1==obB->getUserPointer()))
+        {
+            
+            count_balas++;
+            if(count_balas >= 15)
+            {
+                printf("Zepelin derribado\n");
+                Win = true;
+            }
+        }
+    }
+}
+
+void drawBala()
+{
+    
+    bala = new malla((char*)"mallas/ball.obj",shader_programme);
+    btVector3 inst_pos = bodoque->getABody()->getCenterOfMassPosition();
+    bala->setMBody(crearCuerpoRigido(inst_pos.getX(),inst_pos.getY(),inst_pos.getZ()-1.7f,0.001f,0.0f,1.0f,0.0f,1.0f,0.1f,0.1f,0.1f));
+    
+    bala->getMBody()->setLinearVelocity(btVector3(0.f,0.f,-1.5f));
+    
+    bala->getMBody()->getMotionState()->getWorldTransform(trans);
+    trans.getOpenGLMatrix(&aux[0][0]);
+    bala->setModelMatrix(aux);
+    bala->draw(model_mat_location);
+    bala->getMBody()->applyCentralForce(btVector3(0.f,0.5f,-3.f));
+    bala->getMBody()->setUserPointer(&bala);
+    dynamicsWorld->addRigidBody(bala->getMBody());
+    
+    printf("Ok\n");
+    
 }
