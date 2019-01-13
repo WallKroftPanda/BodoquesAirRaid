@@ -38,6 +38,10 @@ glm::vec3 zeppelin::getRotation(){
 char* zeppelin::getFilename(){
     return this->filename;
 }
+btRigidBody* zeppelin::getRBody()
+{
+    return this->rBody;
+}
 
 void zeppelin::setPosition(glm::vec3 pos,int model){
     T = glm::translate(glm::mat4(1.0f),pos);
@@ -57,4 +61,9 @@ void zeppelin::draw(int matloc){
 	    glUniformMatrix4fv(matloc, 1, GL_FALSE, &this->modelMatrix[0][0]);
         glBindVertexArray(this->getVao());
         glDrawArrays(GL_TRIANGLES, 0, this->getNumVertices());
+}
+
+void zeppelin::setRBody(btRigidBody* rBody)
+{
+    this->rBody = rBody;
 }

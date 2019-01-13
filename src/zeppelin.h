@@ -1,6 +1,6 @@
 #ifndef ZEPPELIN_H
 #define ZEPPELIN_H
-
+#include "addons.h"
 using namespace std;
 class zeppelin{
     private:
@@ -14,6 +14,8 @@ class zeppelin{
         glm::mat4 modelMatrix;
         char* filename;
         float angle;
+        btRigidBody* rBody;
+
     public:
         zeppelin(char *filename);
         
@@ -24,6 +26,7 @@ class zeppelin{
         glm::vec3 getPosition();
         glm::vec3 getRotation();
         char* getFilename();
+        btRigidBody* getRBody();
         
         //setters
         void setVao(GLuint vao);
@@ -32,6 +35,7 @@ class zeppelin{
         void setRotation(float ang,glm::vec3 rot,int model);
         void setFileName(char *f);
         void setModelMatrix(glm::mat4 model);
+        void setRBody(btRigidBody* rBody);
 
         void draw(int matloc);
         void explotar();

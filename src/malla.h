@@ -1,10 +1,10 @@
 #ifndef MALLA_H
 #define MALLA_H
-
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <GL/glew.h>
+#include <bullet/btBulletDynamicsCommon.h>
 using namespace std;
 class malla/*: public malla*/{
     private:
@@ -18,7 +18,8 @@ class malla/*: public malla*/{
         glm::vec3 scale;
         glm::mat4 T;
         glm::mat4 modelMatrix;
-        
+        btRigidBody* mBody;
+
     protected:
         GLuint shader_programme;
         GLuint tex;
@@ -37,6 +38,7 @@ class malla/*: public malla*/{
         glm::vec3 getPosition();
         glm::vec3 getRotation();
         char* getFilename();
+        btRigidBody* getMBody();
         
 
         //setters
@@ -47,6 +49,7 @@ class malla/*: public malla*/{
         void setRotation(float ang,glm::vec3 rot,int model);
         void setFileName(char *f);
         void setModelMatrix(glm::mat4 model);
+        void setMBody(btRigidBody* mBody);
     
         void draw(int matloc);
         bool load_specular(const char *filename);
