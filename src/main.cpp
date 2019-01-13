@@ -202,13 +202,12 @@ int main(){
     bodySuelo = crearCuerpoRigido(0.0f,0.0f,  0.0f, 0.0,0.0,0.0,0.0,1.0,500.0,1.0,500.0);
     bodySuelo->setUserPointer(&bodySuelo);
     dynamicsWorld->addRigidBody(bodySuelo);
-    pZx=-21.f;pZy=40.f;pZz=-50.f;cZx=25.0;cZy=3.0;cZz=3.0;
+    pZx=35.f;pZy=40.f;pZz=-100.f;cZx=25.0;cZy=3.0;cZz=3.0;
     e1->setRBody(crearCuerpoRigido(pZx,pZy,pZz,0.0f,0,0,0,1.0f,cZx,cZy,cZz));
     e1->getRBody()->setUserPointer(&e1);
     dynamicsWorld->addRigidBody(e1->getRBody());
     cHx=3.0;cHy=1.0;cHz=3.0;
-    
-    bodoque->setABody(crearCuerpoRigido(0.f,40.f,10.f,0.5f,0.0f,1.0f,0.0f,1.0f,cHx,cHy,cHz));
+    bodoque->setABody(crearCuerpoRigido(50.f,40.f,10.f,0.5f,0.0f,1.0f,0.0f,1.0f,cHx,cHy,cHz));
     bodoque->getABody()->setUserPointer(&bodoque);
     bodoque->getABody()->setLinearVelocity(btVector3(0.0f,0.f,-0.5f));
     dynamicsWorld->addRigidBody(bodoque->getABody());
@@ -409,7 +408,7 @@ int main(){
                 {
                     bodoque->getABody()->applyForce(btVector3(0,5,0),btVector3(0,1,0));
                 }
-                bodoque->getABody()->setAngularVelocity(bodoque->getABody()->getAngularVelocity()*-1);
+                //bodoque->getABody()->setAngularVelocity(bodoque->getABody()->getAngularVelocity()*-1);
                 btVector3 bpos = bodoque->getABody()->getCenterOfMassPosition();
                 cameraPos = glm::vec3(bpos.getX(),bpos.getY()+1.f,bpos.getZ()+6.f);
                 pHx=bpos.getX();
@@ -426,6 +425,20 @@ int main(){
                 cameraUp.x = hUp.getX();
                 cameraUp.y = hUp.getY();
                 cameraUp.z = hUp.getZ();
+
+                f = bodoque->getABody()->getCenterOfMassPosition();
+            
+                hUp.setX(auxhUp.x-f.getX());
+                hUp.setY(auxhUp.y-f.getY());
+                hUp.setZ(auxhUp.z-f.getZ());
+                
+                hFront.setX(auxhFront.x-f.getX());
+                hFront.setY(auxhFront.y-f.getY());
+                hFront.setZ(auxhFront.z-f.getZ());
+            
+                cameraFront.x = hFront.getX();
+                cameraFront.y = hFront.getY();
+                cameraFront.z = hFront.getZ();
             }
 
             
@@ -437,16 +450,6 @@ int main(){
             
             //Por si se quiere usar btQuaternion
             //bFront=bodyHurri->getOrientation();
-            
-            f = bodoque->getABody()->getCenterOfMassPosition();
-            
-            hUp.setX(auxhUp.x-f.getX());
-            hUp.setY(auxhUp.y-f.getY());
-            hUp.setZ(auxhUp.z-f.getZ());
-            
-            hFront.setX(auxhFront.x-f.getX());
-			hFront.setY(auxhFront.y-f.getY());
-            hFront.setZ(auxhFront.z-f.getZ());
             
             
             //En este print se imprime la posicíón    	Y la posición del punto que representa el "UP" 
@@ -507,7 +510,7 @@ int main(){
         }
         
         if (!alive) {
-           debug->setView(&view);
+            debug->setView(&view);
             debug->setProj(&projection);
             dynamicsWorld->debugDrawWorld();
             debug->drawLines();
@@ -610,8 +613,8 @@ void GUILayout(){
                 glfwSetWindowShouldClose(g_window, true);
             }
             
-
             ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+            ImGui::Text("Instrucciones:\nFlechas direccionales: UP-arriba, DOWN-abajo, LEFT-izquierda, RIGHT-derecha\nLEFT-CTRL: Frenar\nLEFT-ALT: Acelerar\nX: Estabilizar\nZ: Disparar\n");
             ImGui::End();
         
 }
@@ -710,31 +713,43 @@ void processInput(GLFWwindow *window){
     if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
         cameraPos += glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
     if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS){
- 		bodoque->getABody()->setAngularVelocity(btVector3(+0.5f,0.f,0.f));
-        bodoque->getABody()->setLinearVelocity(bodoque->getABody()->getLinearVelocity() + btVector3(0.0f,-0.1f,0.f));
+        //bodoque->getABody()->setAngularVelocity(btVector3(0.f,0.f,0.f));
+ 		bodoque->getABody()->setAngularVelocity(/*bodoque->getABody()->getAngularVelocity()  -*/ btVector3(-0.1f,0.f,0.f));
+        bodoque->getABody()->setLinearVelocity(bodoque->getABody()->getLinearVelocity() + btVector3(0.0f,-0.001f,0.f));
+        /*
         cameraFront.x = hFront.getX();
         cameraFront.y = hFront.getY();
         cameraFront.z = hFront.getZ();
+        */
 	}       
     if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS){
-		bodoque->getABody()->setAngularVelocity(btVector3(-0.5f,0.0f,0.0f));
-        bodoque->getABody()->setLinearVelocity(bodoque->getABody()->getLinearVelocity() + btVector3(0.0f,0.1f,0.f));
+		//bodoque->getABody()->setAngularVelocity(btVector3(0.f,0.f,0.f));
+ 		bodoque->getABody()->setAngularVelocity(/*bodoque->getABody()->getAngularVelocity()  +*/ btVector3(0.1f,0.f,0.f));
+        bodoque->getABody()->setLinearVelocity(bodoque->getABody()->getLinearVelocity() + btVector3(0.0f,0.001f,0.f));
+        /*
         cameraFront.x = hFront.getX();
         cameraFront.y = hFront.getY();
         cameraFront.z = hFront.getZ();
+        */
 	}
     if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS){
-        bodoque->getABody()->setAngularVelocity(btVector3(0.f,0.f,-0.5f));
+        //bodoque->getABody()->setAngularVelocity(btVector3(0.0f,bodoque->getABody()->getAngularVelocity().getY(),bodoque->getABody()->getAngularVelocity().getX()));
+        bodoque->getABody()->setAngularVelocity(btVector3(0.f,0.f,0.0f));
+        bodoque->getABody()->setAngularVelocity(btVector3(0.f,0.f,0.65f));
         cameraFront.x = hFront.getX();
         cameraFront.y = hFront.getY();
-        cameraFront.z = hFront.getZ();
-        
+        cameraFront.z = hFront.getZ(); 
     }
     if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS){
-       bodoque->getABody()->setAngularVelocity(btVector3(0.f,0.f,0.5f));
+        bodoque->getABody()->setAngularVelocity(btVector3(0.f,0.f,0.0f));
+        bodoque->getABody()->setAngularVelocity(btVector3(0.f,0.f,-0.65f));
         cameraFront.x = hFront.getX();
         cameraFront.y = hFront.getY();
         cameraFront.z = hFront.getZ();
+    }
+    if (glfwGetKey(window, GLFW_KEY_X) == GLFW_PRESS)
+    {
+        bodoque->getABody()->setAngularVelocity(btVector3(0.f,0.f,0.0f));
     }
     if(glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS){
         if(bodoque->getABody()->getLinearVelocity().getZ()<-0.5f)bodoque->getABody()->applyCentralForce(btVector3(0.f,0.f,1.f));
@@ -871,7 +886,7 @@ void checkCollision()
         {
             
             count_balas++;
-            if(count_balas >= 15)
+            if(count_balas >= 500)
             {
                 printf("Zepelin derribado\n");
                 Win = true;
@@ -886,15 +901,15 @@ void drawBala()
     
     bala = new malla((char*)"mallas/ball.obj",shader_programme);
     btVector3 inst_pos = bodoque->getABody()->getCenterOfMassPosition();
-    bala->setMBody(crearCuerpoRigido(inst_pos.getX(),inst_pos.getY(),inst_pos.getZ()-1.7f,0.001f,0.0f,1.0f,0.0f,1.0f,0.1f,0.1f,0.1f));
+    bala->setMBody(crearCuerpoRigido(inst_pos.getX(),inst_pos.getY(),inst_pos.getZ()-2.f,0.001f,0.0f,1.0f,0.0f,1.0f,0.1f,0.1f,0.1f));
     
-    bala->getMBody()->setLinearVelocity(btVector3(0.f,0.f,-1.5f));
+    bala->getMBody()->setLinearVelocity(btVector3(0.f,0.f,-2.5f));
     
     bala->getMBody()->getMotionState()->getWorldTransform(trans);
     trans.getOpenGLMatrix(&aux[0][0]);
     bala->setModelMatrix(aux);
     bala->draw(model_mat_location);
-    bala->getMBody()->applyCentralForce(btVector3(3*hFront));
+    bala->getMBody()->applyCentralForce(btVector3(6*hFront.getX(),3*hFront.getY(),3*hFront.getZ()));
     bala->getMBody()->setUserPointer(&bala);
     dynamicsWorld->addRigidBody(bala->getMBody());
     
