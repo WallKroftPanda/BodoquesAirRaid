@@ -90,6 +90,12 @@ malla *aletaT;
 helice *heli;
 btVector3 f;
 
+glm::vec4 auxhUp;
+glm::vec4 auxhFront;
+
+btVector3 hUp;
+btVector3 hFront;
+
 bool firstBodoque;
 float bPitch;
 float bYaw;
@@ -176,7 +182,7 @@ int main()
     dynamicsWorld->setGravity(btVector3(0, -10, 0));
     //btRigidBody* crearCuerpoRigido(float posX,float posY,float posZ,float masa,float alfa, float dirX,float dirY,float dirZ, btDiscreteDynamicsWorld* mundoFisico){
 
-    bodyBall = crearCuerpoRigido( 0.0 , 10.0, -10.0, 5.0,0.0,1.0,0.0,0.0,1.0,1.0,1.0,dynamicsWorld);
+    bodyBall = crearCuerpoRigido( 0.f, 20.f, 15.0f, 0.0,0.0,1.0,0.0,0.0,1.0,1.0,1.0,dynamicsWorld);
     bodySuelo = crearCuerpoRigido(0.0f,1.0f,  0.0f, 0.0,0.0,0.0,0.0,1.0,50.0,1.0,50.0,dynamicsWorld);
     
     bodyZep =crearCuerpoRigido(-21.0f,10.0f,-50.0f,0.0f,0,0,0,1.0f,25.0,3.0,3.0,dynamicsWorld);
@@ -228,23 +234,21 @@ int main()
 	btVector3 f = bodyHurri->getCenterOfMassPosition();
 	
 	//orientación del avión según bullet, representado como quaternion:
-	btQuaternion bFront = bodyHurri->getOrientation();
 	
 	//Vector up inicializado como btVector3:
-	btVector3 prueba =btVector3(0.f,21.f,15.0f);
+	//btVector3 prueba =btVector3(0.f,21.f,15.0f);
 	
 	//Si se quiere utilizar glm::vec3 para trabajar con los vectores del avión se debe descomentar esto:
-	//glm::vec3 prueba =glm::vec3(f.getX(),f.getY()+1.f,f.getZ(),0.f);
-	//glm::vec4 temp = glm::vec4(f.getX(),f.getY()+1.f,f.getZ(),0.f);
+	
+	glm::vec4 temp;
 	btTransform rot;
-	btMotionState *auxMS;
 	//Por que se necesita una resta, para que dibuje la linea?
-	float linea[] = {f.getX(), f.getY(), f.getZ(),prueba.getX(), prueba.getY(), prueba.getZ()};
+	float linea[] = {f.getX(), f.getY(), f.getZ(),temp.x, temp.y, temp.z};
 	
 	GLuint vboLin;
 	glGenBuffers( 1, &vboLin );
 	glBindBuffer( GL_ARRAY_BUFFER, vboLin );
-	glBufferData( GL_ARRAY_BUFFER, 3 * 2 * sizeof( GLfloat ), &linea,GL_STATIC_DRAW );
+	glBufferData( GL_ARRAY_BUFFER, 3 * 6 * sizeof( GLfloat ), &linea,GL_STATIC_DRAW );
 	
 	GLuint vaoLin;
 	glGenVertexArrays( 1, &vaoLin );
@@ -369,31 +373,36 @@ int main()
             heli->setModelMatrix(aux);
             //heli->setRotation(2,glm::vec3(1,0,0));
             heli->draw(model_mat_location);
-            
             //Por si se quiere usar btVector3
-            prueba = trans(prueba).normalize();
             
             //Por si se quiere usar glm::vec3
-            /*temp = aux*temp;
-            prueba.x = temp.x;
-            prueba.y = temp.y;
-            prueba.z = temp.z;*/
-            
+            auxhUp = aux*glm::vec4(0.f,1.f,0.f,1.f);
+            auxhFront = aux*glm::vec4(1.f,0.f,0.f,1.f);
             //Por si se quiere usar btQuaternion
             //bFront=bodyHurri->getOrientation();
             
+            
             f = bodyHurri->getCenterOfMassPosition();
+            
+            hUp.setX(auxhUp.x-f.getX());
+            hUp.setY(auxhUp.y-f.getY());
+            hUp.setZ(auxhUp.z-f.getZ());
+            
+            hFront.setX(auxhFront.x-f.getX());
+			hFront.setY(auxhFront.y-f.getY());
+            hFront.setZ(auxhFront.z-f.getZ());
+            
             
             //En este print se imprime la posicíón    	Y la posición del punto que representa el "UP" 
             // del centro de masa a la derecha			del avión a la izquierda
             
             //ELija uno de los print dependiendo de con que tipo de dato está usando:
             //btVector3 o btQuaternion:
-            printf("X: %f Y: %f Z: %f --- X: %f Y: %f Z: %f \n", f.getX(), f.getY(), f.getZ(), prueba.getX(), prueba.getY(), prueba.getZ());
+            printf("X: %f Y: %f Z: %f --- X: %f Y: %f Z: %f \n", f.getX(), f.getY(), f.getZ(), hFront.getX(), hFront.getY(), hFront.getZ());
             
             //glm::vec3
             //printf("X: %f Y: %f Z: %f --- X: %f Y: %f Z: %f \n", f.getX(), f.getY(), f.getZ(), prueba.x, prueba.y, prueba.z);
-            
+            glUniformMatrix4fv(model_mat_location, 1, GL_FALSE, &aux[0][0]);
             glBindVertexArray( vaoLin );
             glDrawArrays( GL_LINES, 0, 2 );
             
@@ -576,11 +585,11 @@ void processInput(GLFWwindow *window)
     if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
         cameraPos += glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
     if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS){
- 		bodyHurri->setAngularVelocity(btVector3(0.5f,0.f,0.f));
+ 		bodyHurri->applyForce(btVector3(auxhUp.x, auxhUp.y, auxhUp.z), hFront);
  		bodyHurri->clearForces ();
 	}       
     if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS){
-		bodyHurri->setAngularVelocity(btVector3(-0.5f,0.f,0.f));
+ 		bodyHurri->applyForce(btVector3(-auxhUp.x, -auxhUp.y, -auxhUp.z), hFront);
  		bodyHurri->clearForces ();
  		
 	}
@@ -600,7 +609,7 @@ void processInput(GLFWwindow *window)
     }
     if(glfwGetKey(window, GLFW_KEY_LEFT_ALT) == GLFW_PRESS)
     {
-        bodyHurri->applyCentralForce(f);
+        bodyHurri->applyCentralForce(hFront);
     }
      
 }
