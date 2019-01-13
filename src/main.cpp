@@ -100,6 +100,7 @@ btVector3 f;
 
 glm::vec4 auxhUp;
 glm::vec4 auxhFront;
+glm::vec4 auxCam;
 
 btVector3 hUp;
 btVector3 hFront;
@@ -398,7 +399,7 @@ int main(){
                 heli->setRotation(1,glm::vec3(1,0,0));
                 heli->draw(model_mat_location);
                 ///w///////////////////////
-                if(bodoque->getABody()->getCenterOfMassPosition().getY()<=75)
+                if(bodoque->getABody()->getCenterOfMassPosition().getY()<=150)
                 {
                     bodoque->getABody()->applyForce(btVector3(0,5,0),btVector3(0,1,0));
                 }
@@ -409,6 +410,16 @@ int main(){
                 pHy=bodoque->getABody()->getCenterOfMassPosition().getY();
                 pHz=bodoque->getABody()->getCenterOfMassPosition().getZ();
                 f = bodoque->getABody()->getCenterOfMassPosition();
+                
+                auxCam = aux*glm::vec4(-5.f,1.f,0.f,1.f);
+                
+                cameraPos.x = auxCam.x;
+                cameraPos.y = auxCam.y;
+                cameraPos.z = auxCam.z;
+                
+                cameraUp.x = hUp.getX();
+                cameraUp.y = hUp.getY();
+                cameraUp.z = hUp.getZ();
             }
 
             
@@ -417,6 +428,7 @@ int main(){
             //Por si se quiere usar glm::vec3
             auxhUp = aux*glm::vec4(0.f,1.f,0.f,1.f);
             auxhFront = aux*glm::vec4(1.f,0.f,0.f,1.f);
+            
             //Por si se quiere usar btQuaternion
             //bFront=bodyHurri->getOrientation();
             
@@ -436,7 +448,7 @@ int main(){
             
             //ELija uno de los print dependiendo de con que tipo de dato está usando:
             //btVector3 o btQuaternion:
-            printf("X: %f Y: %f Z: %f --- X: %f Y: %f Z: %f \n", f.getX(), f.getY(), f.getZ(), hFront.getX(), hFront.getY(), hFront.getZ());
+            printf("X: %f Y: %f Z: %f --- X: %f Y: %f Z: %f \n", f.getX(), f.getY(), f.getZ(), auxCam.x, auxCam.y, auxCam.z);
             
             //glm::vec3
             //printf("X: %f Y: %f Z: %f --- X: %f Y: %f Z: %f \n", f.getX(), f.getY(), f.getZ(), prueba.x, prueba.y, prueba.z);
@@ -619,17 +631,29 @@ void processInput(GLFWwindow *window){
     if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS){
  		bodoque->getABody()->setAngularVelocity(btVector3(+0.5f,0.f,0.f));
         bodoque->getABody()->setLinearVelocity(bodoque->getABody()->getLinearVelocity() + btVector3(0.0f,-0.1f,0.f));
+        cameraFront.x = hFront.getX();
+        cameraFront.y = hFront.getY();
+        cameraFront.z = hFront.getZ();
 	}       
     if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS){
 		bodoque->getABody()->setAngularVelocity(btVector3(-0.5f,0.0f,0.0f));
         bodoque->getABody()->setLinearVelocity(bodoque->getABody()->getLinearVelocity() + btVector3(0.0f,0.1f,0.f));
+        cameraFront.x = hFront.getX();
+        cameraFront.y = hFront.getY();
+        cameraFront.z = hFront.getZ();
 	}
     if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS){
-        bodoque->getABody()->getAngularFactor();
         bodoque->getABody()->setAngularVelocity(btVector3(0.f,0.f,-0.5f));
+        cameraFront.x = hFront.getX();
+        cameraFront.y = hFront.getY();
+        cameraFront.z = hFront.getZ();
+        
     }
     if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS){
        bodoque->getABody()->setAngularVelocity(btVector3(0.f,0.f,0.5f));
+        cameraFront.x = hFront.getX();
+        cameraFront.y = hFront.getY();
+        cameraFront.z = hFront.getZ();
     }
     if(glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS){
         if(bodoque->getABody()->getLinearVelocity().getZ()<-0.5f)bodoque->getABody()->applyCentralForce(btVector3(0.f,0.f,1.f));
