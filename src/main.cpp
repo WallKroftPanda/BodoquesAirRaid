@@ -75,10 +75,15 @@ float lastFrame;
 ISoundEngine *SoundEngine;
 
 airplane* avion;
+
+// Variables condicionales del transcurso del juego
 bool inGame=false;
 bool alive = true;
 bool Win = false;
+bool lose = false;
 int count_balas = 0;
+
+
 int model_mat_location;
 
 airplane *bodoque;
@@ -304,6 +309,7 @@ int main(){
             //time
         }
         if (inGame) {
+            bodoque->setPosition(glm::vec3(0,40,10),model_mat_location);
             debug->setView(&view);
             debug->setProj(&projection);
             dynamicsWorld->debugDrawWorld();
@@ -499,6 +505,81 @@ int main(){
             glfwSwapBuffers(g_window);
             glfwPollEvents();
         }
+        
+        if (!alive) {
+           debug->setView(&view);
+            debug->setProj(&projection);
+            dynamicsWorld->debugDrawWorld();
+            debug->drawLines();
+            glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
+            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+            glUseProgram (shader_programme);
+            view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
+            glUniformMatrix4fv(view_mat_location, 1, GL_FALSE, &view[0][0]);
+            ImGui:: CreateContext ();
+            ImGui_ImplOpenGL3_NewFrame();
+            ImGui_ImplGlfw_NewFrame();
+            ImGui::NewFrame();
+            bool open = true;
+
+            ImGui::Begin("Lo lamentamos pero has perdido ",&open);
+            ImGui::SetWindowPos("Lo lamentamos pero has perdido ",ImVec2(10,10));
+            ImGui::SetWindowSize(ImVec2(g_gl_width-20, g_gl_height-20));
+            ImGui::StyleColorsLight(NULL);
+            ImGui::Text("Intentalo Otra vez");
+            ImGui::Text("Presiona ESCAPE para finalizar");
+            ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+            
+            if (ImGui::Button("CERRAR")) {
+                exit(1);
+            }
+            ImGui::End();
+            ImGui::Render();
+
+            processInput(g_window);
+            
+            ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+            glfwSwapBuffers(g_window);
+            glfwPollEvents();
+        }
+        
+        if (Win) {
+            debug->setView(&view);
+            debug->setProj(&projection);
+            dynamicsWorld->debugDrawWorld();
+            debug->drawLines();
+            glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
+            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+            glUseProgram (shader_programme);
+            view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
+            glUniformMatrix4fv(view_mat_location, 1, GL_FALSE, &view[0][0]);
+            ImGui:: CreateContext ();
+            ImGui_ImplOpenGL3_NewFrame();
+            ImGui_ImplGlfw_NewFrame();
+            ImGui::NewFrame();
+            ImGui::Begin("¡HAS GANADO FELICIDADES!!!!!! ");
+            ImGui::SetWindowPos("¡HAS GANADO FELICIDADES!!!!!! ",ImVec2(10,10));
+            ImGui::SetWindowSize(ImVec2(g_gl_width-20, g_gl_height-20));
+            ImGui::StyleColorsLight(NULL);
+            ImGui::Text("ENHORABUENA LO HAS LOGRADO!!!!!!!!!!!!!!!!");
+            ImGui::Text("Presiona ESCAPE para finalizar");
+            ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+            
+            if (ImGui::Button("CERRAR")) {
+                exit(1);
+            }
+            ImGui::End();       
+            ImGui::Render();
+
+            processInput(g_window);
+            
+            ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+            glfwSwapBuffers(g_window);
+            glfwPollEvents();
+        }
+        
+
+        
         
     }
 
@@ -767,7 +848,7 @@ btRigidBody* crearCuerpoRigido(float posX,float posY,float posZ,float masa,float
 void checkCollision()
 {
     int numManifolds = dynamicsWorld->getDispatcher()->getNumManifolds();
-    #pragma omp parallel for schedule(dynamic,4)
+    #pragma omp parallel for schedule(dynamic,4)      // PARALELISMO
     for(int i = 0; i < numManifolds; ++i)
     {
         btPersistentManifold* contactManifold = dynamicsWorld->getDispatcher()->getManifoldByIndexInternal(i);
@@ -777,11 +858,13 @@ void checkCollision()
         if((&bodoque==obA->getUserPointer() and &e1==obB->getUserPointer()) or (&bodoque==obB->getUserPointer() and &e1==obA->getUserPointer()))
         {
             alive = false;
+            inGame = false;
             printf("Choco zepelin con avion\n");
         }   
         else if((&bodySuelo==obA->getUserPointer() and &bodoque==obB->getUserPointer()) or (&bodoque==obA->getUserPointer() and &bodySuelo==obB->getUserPointer()))
         {
             alive = false;
+            inGame = false;
             printf("Choco avion con el suelo\n");
         }
         else if((&bala==obB->getUserPointer() && &e1==obA->getUserPointer())||(&bala==obA->getUserPointer() && &e1==obB->getUserPointer()))
@@ -792,6 +875,7 @@ void checkCollision()
             {
                 printf("Zepelin derribado\n");
                 Win = true;
+                inGame = false;
             }
         }
     }
