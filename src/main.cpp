@@ -903,7 +903,7 @@ void drawBala()
     btVector3 inst_pos = bodoque->getABody()->getCenterOfMassPosition();
     bala->setMBody(crearCuerpoRigido(inst_pos.getX(),inst_pos.getY(),inst_pos.getZ()-2.f,0.001f,0.0f,1.0f,0.0f,1.0f,0.1f,0.1f,0.1f));
     
-    bala->getMBody()->setLinearVelocity(btVector3(0.f,0.f,-2.5f));
+    bala->getMBody()->setLinearVelocity(bodoque->getABody()->getLinearVelocity() + btVector3(0.f,0.f,-2.5f));
     
     bala->getMBody()->getMotionState()->getWorldTransform(trans);
     trans.getOpenGLMatrix(&aux[0][0]);
